@@ -1,42 +1,26 @@
 name: Build & Release
 
-# 触发：仅手动（Actions 页面 workflow_dispatch 一键启动）。
-# 正式发布由维护者在本机构建并直接发布 Release，不由推送自动触发。
-# 需要产出 macOS 安装包时（只能在 macOS runner 上构建），在 Actions 页面手动运行本工作流即可。
+# 触发方式：
+# - 推送 v* 标签：构建 Windows + macOS 全架构产物，并自动发布 GitHub Release（正式发布走这条）
+# - 手动 workflow_dispatch：只构建并上传产物，不发布（用于验证构建链路）
 on:
+  push:
+    tags: ['v*']
   workflow_dispatch:
 
-# 同一 ref 的多次构建自动取消，避免重复占用 runner
+# 同一 ref 的重复构建自动取消
 concurrency:
   group: build-${{ github.ref }}
   cancel-in-progress: true
 
-# 允许工作流创建 Release 并上传安装包
+# 建 Release、上传资产需要写权限
 permissions:
   contents: write
 
 jobs:
-  build:
-    name: ${{ matrix.name }}
-    runs-on: ${{ matrix.os }}
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - os: windows-latest
-            name: Windows x64 (安装器)
-            script: pack:win
-            artifact: HongGuo-PC-Windows-x64
-            glob: 'desktop/dist-electron/*.exe'
-          # macOS 只跑一个任务：electron-builder 会在同一台 Apple Silicon 机器上
-          # 同时产出 x64 与 arm64 两个 dmg（electron-builder.config.cjs 的 mac.target 已声明两个架构）。
-          # 早期拆成 macos-13(Intel) + macos-14(arm64) 两个任务时，Intel runner 长时间排队等不到机器。
-          - os: macos-14
-            name: macOS (DMG x64 + arm64)
-            script: pack:mac
-            artifact: HongGuo-PC-macOS
-            glob: 'desktop/dist-electron/*.dmg'
-
+  build-windows:
+    name: Windows (x64 + arm64)
+    runs-on: windows-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -50,7 +34,7 @@ jobs:
             desktop/package-lock.json
             backend/package-lock.json
 
-      # 后端依赖会被一并打进安装包（extraResources），必须先安装
+      # 后端会随安装包分发（extraResources），必须先装依赖
       - name: Install backend deps
         working-directory: backend
         run: npm install --no-audit --no-fund
@@ -59,24 +43,67 @@ jobs:
         working-directory: desktop
         run: npm install --no-audit --no-fund
 
-      # 各平台脚本内部已包含 vite build（保证 app.asar 内含 dist/index.html）
-      - name: Build & package (${{ matrix.name }})
+      # 产出：通用安装器(x64+arm64) + x64 安装器 + arm64 安装器 + x64/arm64 便携 zip
+      - name: Build & package Windows
         working-directory: desktop
-        run: npm run ${{ matrix.script }}
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: npm run pack:win
 
-      - name: Upload artifact
+      - name: List Windows artifacts
+        working-directory: desktop
+        run: Get-ChildItem dist-electron | Select-Object Name, Length
+
+      - name: Upload Windows artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ matrix.artifact }}
-          path: ${{ matrix.glob }}
+          name: HongGuo-PC-Windows
+          path: desktop/dist-electron/*.{exe,zip}
+          if-no-files-found: error
+
+  build-macos:
+    name: macOS (x64 + arm64)
+    runs-on: macos-14
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: |
+            desktop/package-lock.json
+            backend/package-lock.json
+
+      - name: Install backend deps
+        working-directory: backend
+        run: npm install --no-audit --no-fund
+
+      - name: Install desktop deps
+        working-directory: desktop
+        run: npm install --no-audit --no-fund
+
+      # 一台 Apple Silicon 机器上同时产出 x64 与 arm64 两个 dmg
+      # （早期拆成 macos-13 + macos-14 两个任务时，Intel runner 长时间排队等不到机器）
+      - name: Build & package macOS
+        working-directory: desktop
+        run: npm run pack:mac
+
+      - name: List macOS artifacts
+        working-directory: desktop
+        run: ls -lh dist-electron
+
+      - name: Upload macOS artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: HongGuo-PC-macOS
+          path: desktop/dist-electron/*.dmg
           if-no-files-found: error
 
   release:
     name: Publish GitHub Release
     if: startsWith(github.ref, 'refs/tags/v')
-    needs: build
+    needs: [build-windows, build-macos]
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -87,19 +114,55 @@ jobs:
         with:
           path: artifacts
 
-      - name: Collect release files
+      # GitHub Release 上传接口会剥离资产名中的非 ASCII 字符（中文会被吞掉），
+      # 因此这里统一把产物重命名为 ASCII 的规范名，并逐个校验，缺一个就失败。
+      - name: Normalize asset names (ASCII) and verify
+        env:
+          VERSION: ${{ github.ref_name }}
         run: |
+          set -euo pipefail
+          V="${VERSION#v}"
           mkdir -p release-files
-          find artifacts -type f \( -name '*.exe' -o -name '*.dmg' -o -name '*.blockmap' \) -exec cp {} release-files/ \;
+          pick() { find artifacts -type f -name "$1" | head -n 1; }
+          copy() { src="$(pick "$1")"; if [ -z "$src" ]; then echo "MISSING: $1"; exit 1; fi; cp "$src" "$2"; echo "OK: $(basename "$2")"; }
+          copy "*Setup-$V.exe"            "release-files/HongGuo-PC-Setup-$V.exe"
+          copy "*Setup-$V-win-x64.exe"    "release-files/HongGuo-PC-Setup-$V-win-x64.exe"
+          copy "*Setup-$V-win-arm64.exe"  "release-files/HongGuo-PC-Setup-$V-win-arm64.exe"
+          copy "*-$V-win.zip"             "release-files/HongGuo-PC-$V-win-x64.zip"
+          copy "*-$V-arm64-win.zip"       "release-files/HongGuo-PC-$V-win-arm64.zip"
+          copy "*-$V-x64.dmg"             "release-files/HongGuo-PC-$V-x64.dmg"
+          copy "*-$V-arm64.dmg"           "release-files/HongGuo-PC-$V-arm64.dmg"
+          count=$(ls -1 release-files | wc -l)
+          echo "assets: $count"
+          [ "$count" -eq 7 ] || { echo "ERROR: 资产数量应为 7，实际 $count"; exit 1; }
           ls -lh release-files
+
+      # 发布说明按版本单独存放：docs/releases/v<版本>.md（也兼容 <版本>.md）
+      - name: Resolve release notes by version
+        env:
+          TAG: ${{ github.ref_name }}
+        run: |
+          set -euo pipefail
+          V="${TAG#v}"
+          if [ -f "docs/releases/$TAG.md" ]; then
+            SRC="docs/releases/$TAG.md"
+          elif [ -f "docs/releases/$V.md" ]; then
+            SRC="docs/releases/$V.md"
+          else
+            echo "ERROR: 缺少发布说明 docs/releases/$TAG.md（或 docs/releases/$V.md）"
+            exit 1
+          fi
+          echo "release notes: $SRC"
+          cp "$SRC" release-notes.md
 
       - name: Create Release
         uses: softprops/action-gh-release@v2
         with:
           files: release-files/*
-          body_path: RELEASE_NOTES.md
+          body_path: release-notes.md
           draft: false
           prerelease: false
-          fail_on_unmatched_files: false
+          fail_on_unmatched_files: true
         env:
+          # Actions 内置令牌，由 GitHub 自动注入，无需个人令牌
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
