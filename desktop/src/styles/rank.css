@@ -1,0 +1,488 @@
+/* ===== HongguoTV 桌面版 —— 榜单页（对照原站结构） ===== */
+
+/* 页面容器：flex 纵向、占满视口高（导航 fixed 悬浮不占位） */
+.rank-root {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  min-width: 1240px;
+  position: relative;
+  z-index: 1;
+}
+
+/* ---- hero 横幅：254px，按榜单切换图片 ---- */
+.rank-hero {
+  height: 254px;
+  overflow: hidden;
+  position: relative;
+  z-index: 0;
+}
+
+.rank-hero-img {
+  height: 100%;
+  left: 0;
+  object-fit: cover;
+  object-position: center top;
+  position: absolute;
+  top: 0;
+  width: 100%;
+}
+
+.rank-hero-content {
+  margin: 0 auto;
+  padding-top: 141px;
+  position: relative;
+  width: 1240px;
+  z-index: 1;
+}
+
+.rank-hero-title {
+  align-items: center;
+  display: flex;
+  gap: 5.161px;
+  height: 45px;
+}
+
+.rank-hero-title h1 {
+  color: #fff;
+  font-family: 'PingFang SC';
+  font-size: 32px;
+  font-weight: 500;
+  line-height: 44px;
+  margin: 0;
+  text-align: center;
+}
+
+.rank-hero-title-right {
+  transform: rotate(180deg);
+}
+
+.rank-hero-sub {
+  color: hsla(0, 0%, 100%, 0.7);
+  font-family: 'PingFang SC';
+  font-size: 14px;
+  letter-spacing: 0;
+  line-height: 22px;
+  margin: 12px 0 0;
+}
+
+/* ---- 主内容区：tabs + 列表 + 分页（1240 居中） ---- */
+.rank-main {
+  margin: 0 auto;
+  position: relative;
+  width: 1240px;
+  z-index: 1;
+}
+
+/* tabs：四榜切换 */
+.rank-tabs {
+  align-items: flex-end;
+  display: flex;
+  gap: 56px;
+  height: 30px;
+  margin: 36px 0 0;
+}
+
+.rank-tab {
+  background: none;
+  border: 0;
+  color: hsla(0, 0%, 100%, 0.5);
+  cursor: pointer;
+  font-family: 'PingFang SC';
+  font-size: 28px;
+  font-weight: 400;
+  height: 30px;
+  letter-spacing: 0;
+  line-height: 30px;
+  opacity: 0.9;
+  padding: 0;
+  position: relative;
+  white-space: nowrap;
+}
+
+.rank-tab-active {
+  color: #fff;
+  font-weight: 500;
+  opacity: 1;
+}
+
+.rank-tab-active::after {
+  background: #fa7705;
+  bottom: 0;
+  content: '';
+  height: 2px;
+  left: 0;
+  position: absolute;
+  right: 0;
+}
+
+/* ---- 榜单列表（对照原站 pc-list：40px 行距、无分隔线、条目 224px） ---- */
+.rank-list {
+  display: flex;
+  flex-direction: column;
+  gap: 40px;
+  list-style: none;
+  margin: 40px 0 0;
+  padding: 0;
+}
+
+.rank-item {
+  min-height: 224px;
+  width: 100%;
+}
+
+.rank-article {
+  display: flex;
+  gap: 32px;
+  height: 224px;
+  width: 100%;
+}
+
+/* 展开选集态：高度自适应（对照原站 pc-item-expanded） */
+.rank-article-expanded {
+  height: auto;
+  min-height: 224px;
+}
+
+/* 封面 + 角标 */
+.rank-cover-link {
+  border-radius: 8px;
+  display: block;
+  flex: 0 0 auto;
+  height: 224px;
+  overflow: hidden;
+  position: relative;
+  width: 160px;
+}
+
+.rank-cover {
+  display: block;
+  height: 224px;
+  object-fit: cover;
+  transition: transform 0.2s ease-out;
+  width: 160px;
+}
+
+.rank-cover-link:hover .rank-cover {
+  transform: scale(1.06);
+}
+
+/* 名次角标：28×28 贴左上角，丝带 SVG 拉伸铺满，数字 DIN Alternate 16px 居中 */
+.rank-badge {
+  align-items: center;
+  color: #fff;
+  display: flex;
+  font-family: 'DIN Alternate';
+  font-size: 16px;
+  font-weight: 700;
+  height: 28px;
+  justify-content: center;
+  left: 0;
+  position: absolute;
+  top: 0;
+  width: 28px;
+}
+
+.rank-badge svg {
+  display: block;
+  height: 100%;
+  inset: 0;
+  position: absolute;
+  width: 100%;
+}
+
+.rank-badge-num {
+  position: relative;
+  z-index: 1;
+}
+
+/* 右侧内容区（对照原站 pc-content：纵向排布，选集行贴底） */
+.rank-content {
+  display: flex;
+  flex: 1 1;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.rank-heading {
+  align-items: center;
+  display: flex;
+  gap: 8px;
+  height: 28px;
+}
+
+.rank-title {
+  color: hsla(0, 0%, 100%, 0.9);
+  font-family: 'PingFang SC';
+  font-size: 20px;
+  font-weight: 500;
+  line-height: 28px;
+  max-width: 510px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* 标题为详情页入口（与封面一致），悬停轻微提亮 */
+.rank-title-link {
+  cursor: pointer;
+}
+
+.rank-title-link:hover {
+  color: #fff;
+}
+
+/* 热度（对照原站 pc-metrics：白色半透明火焰 + 14px 文本） */
+.rank-heat {
+  align-items: center;
+  color: hsla(0, 0%, 100%, 0.4);
+  display: flex;
+  flex: none;
+  font-family: 'PingFang SC';
+  font-size: 14px;
+  gap: 2px;
+  line-height: 20px;
+}
+
+.icon-heat {
+  display: block;
+  flex: none;
+  height: 14px;
+  width: 14px;
+}
+
+/* 互动数据：金底胶囊，评分为橙底、新剧为绿底（对照原站 pc-engagement） */
+.rank-engagement {
+  align-items: center;
+  display: flex;
+  gap: 8px;
+  height: 24px;
+  list-style: none;
+  margin: 12px 0 0;
+  padding: 0;
+}
+
+.rank-engagement li {
+  background: rgba(215, 164, 97, 0.1);
+  border-radius: 4px;
+  color: #d7a461;
+  font-family: 'PingFang SC';
+  font-size: 12px;
+  line-height: 16px;
+  padding: 4px 8px;
+  white-space: nowrap;
+}
+
+.rank-engagement .rank-score-tag {
+  align-items: center;
+  background: rgba(250, 119, 5, 0.1);
+  color: rgba(250, 119, 5, 0.8);
+  display: inline-flex;
+  gap: 4px;
+}
+
+.icon-score {
+  display: block;
+  flex: 0 0 auto;
+  height: 12px;
+  width: 12px;
+}
+
+.rank-engagement .rank-status-tag {
+  background: rgba(0, 208, 160, 0.1);
+  color: #00d0a0;
+}
+
+/* 题材标签：2px 圆点分隔（对照原站 pc-categories） */
+.rank-tags {
+  align-items: center;
+  color: hsla(0, 0%, 100%, 0.4);
+  display: flex;
+  font-family: 'PingFang SC';
+  font-size: 14px;
+  gap: 2px;
+  height: 20px;
+  line-height: 20px;
+  margin: 12px 0 0;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.rank-tag-dot {
+  display: block;
+  flex: 0 0 auto;
+  height: 2px;
+  width: 2px;
+}
+
+/* 简介：两行 48px 截断（对照原站 pc-description） */
+.rank-desc {
+  color: hsla(0, 0%, 100%, 0.4);
+  display: -webkit-box;
+  font-family: 'PingFang SC';
+  font-size: 14px;
+  height: 48px;
+  line-height: 24px;
+  margin: 8px 0 0;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
+/* ---- 选集：播放正片 + 集数格子（收起单行、展开全部换行，对照原站 pc-episodes） ---- */
+.rank-episodes {
+  display: flex;
+  gap: 12px;
+  margin-top: auto;
+  min-height: 46px;
+}
+
+.rank-article-expanded .rank-episodes {
+  flex-wrap: wrap;
+  justify-content: flex-start;
+  margin-top: 24px;
+  row-gap: 12px;
+}
+
+.rank-episode-list-container {
+  flex: 1 1;
+  min-width: 0;
+}
+
+.rank-episode-list {
+  column-gap: 12px;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, 46px);
+  height: 46px;
+  justify-content: space-between;
+  overflow: hidden;
+  row-gap: 12px;
+  width: 100%;
+}
+
+.rank-article-expanded .rank-episode-list,
+.rank-article-expanded .rank-episode-list-container {
+  display: contents;
+}
+
+.rank-episode,
+.rank-more,
+.rank-play-button {
+  align-items: center;
+  background: hsla(0, 0%, 100%, 0.08);
+  border-radius: 12px;
+  color: hsla(0, 0%, 100%, 0.9);
+  display: inline-flex;
+  font-family: 'PingFang SC';
+  font-size: 16px;
+  justify-content: center;
+  transition: background-color 0.16s ease;
+}
+
+.rank-more {
+  border: 0;
+  cursor: pointer;
+  padding: 0;
+}
+
+.rank-episode:hover,
+.rank-more:hover,
+.rank-play-button:hover {
+  background: hsla(0, 0%, 100%, 0.16);
+}
+
+.rank-play-button {
+  flex: 0 0 168px;
+  gap: 12px;
+  height: 46px;
+  width: 168px;
+}
+
+.icon-play {
+  display: block;
+  height: 14px;
+  width: 14px;
+}
+
+.rank-episode,
+.rank-more {
+  flex: 0 0 46px;
+  font-size: 18px;
+  height: 46px;
+  width: 46px;
+}
+
+.rank-more svg {
+  display: block;
+  height: 24px;
+  transition: transform 0.2s ease-out;
+  width: 24px;
+}
+
+.rank-more-open {
+  transform: rotate(180deg);
+}
+
+/* ---- 分页 ---- */
+.rank-pagination {
+  align-items: center;
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+  margin: 44px 0 80px;
+}
+
+.rank-page {
+  align-items: center;
+  background: hsla(0, 0%, 100%, 0.06);
+  border: 0;
+  border-radius: 8px;
+  color: hsla(0, 0%, 100%, 0.5);
+  cursor: pointer;
+  display: flex;
+  font-family: 'PingFang SC';
+  font-size: 14px;
+  height: 32px;
+  justify-content: center;
+  line-height: 22px;
+  min-width: 32px;
+  padding: 0 6px;
+  transition: background 70ms ease, color 70ms ease;
+}
+
+.rank-page:hover:not(:disabled) {
+  background: hsla(0, 0%, 100%, 0.12);
+  color: hsla(0, 0%, 100%, 0.9);
+}
+
+.rank-page-active {
+  background: hsla(0, 0%, 100%, 0.14);
+  color: #fff;
+}
+
+.rank-page:disabled {
+  cursor: default;
+  opacity: 0.35;
+}
+
+.rank-page-gap {
+  background: transparent;
+  cursor: default;
+  pointer-events: none;
+  user-select: none;
+}
+
+.rank-page-gap:hover {
+  background: transparent;
+  color: hsla(0, 0%, 100%, 0.5);
+}
+
+.rank-arrow-btn {
+  padding: 0 8px;
+}
+
+.rank-arrow {
+  display: block;
+  height: 12px;
+  width: 12px;
+}

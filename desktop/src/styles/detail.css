@@ -1,0 +1,898 @@
+/* ===== 详情页（对照原站 detail 页：hero / 分集 / 热评 / 相关短剧 / 热门短剧） ===== */
+
+.dt-page {
+  position: relative;
+  width: 100%;
+  padding-top: 134px;
+  /* 原版 footer 本身带 padding-bottom:50px；桌面端不渲染 footer，
+     用页面底部留白兜底，保证内容永不贴住窗口底边 */
+  padding-bottom: 80px;
+  z-index: 2;
+}
+
+/* 背景：封面放大 + 顶部渐隐（原站 pc-cover：1920/1415 铺满并向下淡出） */
+.dt-bg {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 900px;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.dt-bg-img {
+  position: absolute;
+  top: -60px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 1920px;
+  aspect-ratio: 1920 / 1415;
+  object-fit: cover;
+  user-select: none;
+  opacity: 0.45;
+}
+
+.dt-bg::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    180deg,
+    rgba(19, 20, 20, 0.35) 0%,
+    rgba(19, 20, 20, 0.72) 55%,
+    #131414 100%
+  );
+}
+
+.dt-container {
+  position: relative;
+  margin: 0 auto;
+  width: 1240px;
+}
+
+/* ===== hero ===== */
+.dt-hero {
+  display: flex;
+  width: 100%;
+}
+
+.dt-hero-cover-box {
+  flex-shrink: 0;
+  width: 152px;
+  height: 212px;
+  margin-right: 24px;
+  border-radius: 12px;
+  overflow: hidden;
+  background: hsla(0, 0%, 100%, 0.06);
+}
+
+.dt-hero-cover {
+  display: block;
+  width: 152px;
+  height: 212px;
+  border-radius: 12px;
+  object-fit: cover;
+}
+
+.dt-hero-info {
+  display: flex;
+  flex: 1 1;
+  flex-direction: column;
+  min-width: 0;
+  max-width: 800px;
+}
+
+.dt-hero-title-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.dt-hero-title {
+  margin: 0;
+  color: hsla(0, 0%, 100%, 0.9);
+  font-size: 20px;
+  font-weight: 500;
+  line-height: 32px;
+}
+
+.dt-hero-heat {
+  display: inline-flex;
+  align-items: center;
+  flex-shrink: 0;
+  gap: 3px;
+  color: hsla(0, 0%, 100%, 0.4);
+  font-size: 16px;
+  line-height: 26px;
+}
+
+/* 热度火焰图标（对齐原版：16×16，白色 40% 透明度，无橙色圆形背景） */
+.dt-hero-heat-icon {
+  width: 16px;
+  height: 16px;
+  flex: none;
+}
+.dt-hero-heat-icon path {
+  fill-opacity: 0.4;
+}
+
+.dt-score-icon {
+  width: 14px;
+  height: 14px;
+}
+
+.dt-btn-play-icon {
+  width: 18px;
+  height: 18px;
+}
+
+.dt-hero-tags {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.dt-hero-rating {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  align-self: center;
+  padding: 2px 8px;
+  border-radius: 6px;
+  background: rgba(250, 119, 5, 0.1);
+  color: #fa7705;
+  font-size: 12px;
+  line-height: 20px;
+}
+
+.dt-social-tag {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: 6px;
+  background: rgba(215, 164, 97, 0.1);
+  color: #d7a461;
+  font-size: 12px;
+  line-height: 20px;
+  white-space: nowrap;
+}
+
+.dt-hero-tag {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  max-width: 150px;
+  padding: 2px 8px;
+  border-radius: 6px;
+  background: hsla(0, 0%, 88%, 0.08);
+  color: hsla(0, 0%, 100%, 0.95);
+  font-size: 12px;
+  line-height: 20px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  opacity: 0.9;
+}
+
+/* 首标签可点击跳转分类页：保留标签样式 + 交互态 */
+button.dt-hero-tag-link {
+  border: none;
+  cursor: pointer;
+  transition: background 0.2s, opacity 0.2s;
+}
+button.dt-hero-tag-link:hover {
+  background: hsla(0, 0%, 88%, 0.18);
+  opacity: 1;
+}
+
+.dt-hero-actors {
+  margin: 0 0 12px;
+  color: hsla(0, 0%, 100%, 0.32);
+  font-size: 16px;
+  line-height: 24px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.dt-hero-actor {
+  color: hsla(0, 0%, 100%, 0.55);
+  transition: color 0.15s ease-out;
+}
+
+.dt-hero-actor:hover {
+  color: hsla(0, 0%, 100%, 0.9);
+}
+
+.dt-hero-actor-link {
+  padding: 0;
+  background: transparent;
+  border: none;
+  font: inherit;
+  cursor: pointer;
+  color: hsla(0, 0%, 100%, 0.55);
+  transition: color 0.15s ease-out;
+}
+
+.dt-hero-actor-link:hover {
+  color: hsla(0, 0%, 100%, 0.9);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.dt-hero-desc-wrap {
+  margin-bottom: 20px;
+  outline: none;
+}
+
+.dt-hero-desc {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 1;
+  margin: 0;
+  color: hsla(0, 0%, 100%, 0.32);
+  font-size: 16px;
+  line-height: 24px;
+  overflow: hidden;
+  overflow-wrap: anywhere;
+  cursor: pointer;
+}
+
+.dt-hero-desc-open {
+  -webkit-line-clamp: unset;
+  display: block;
+}
+
+.dt-hero-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: auto;
+}
+
+.dt-btn-play {
+  position: relative;
+  z-index: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 144px;
+  height: 45px;
+  padding: 10px 0;
+  border: 0;
+  border-radius: 12px;
+  background: linear-gradient(105.2deg, #ff7e0d 0.62%, #ff9233);
+  color: hsla(0, 0%, 100%, 0.95);
+  cursor: pointer;
+}
+
+.dt-btn-play::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: 12px;
+  background: linear-gradient(105.2deg, #ed6f00 0.62%, #eb862f);
+  opacity: 0;
+  transition: opacity 0.15s ease-out;
+}
+
+.dt-btn-play:hover::before {
+  opacity: 1;
+}
+
+.dt-btn-play-icon {
+  width: 16px;
+  height: 16px;
+}
+
+.dt-btn-play-text {
+  margin-left: 8px;
+  font-size: 16px;
+  font-weight: 500;
+  line-height: 26px;
+}
+
+.dt-episode-count {
+  color: hsla(0, 0%, 100%, 0.4);
+  font-size: 16px;
+  line-height: 24px;
+}
+
+/* ===== 分集格子 ===== */
+.dt-episode-container {
+  width: 100%;
+  margin-top: 24px;
+}
+
+.dt-episode-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, 56px);
+  column-gap: 12px;
+  row-gap: 12px;
+  justify-content: space-between;
+  width: 100%;
+}
+
+/* 收起态：仅显示第一行（17 集 + 展开箭头占第 18 格） */
+.dt-episode-grid:not(.dt-episode-grid-expanded) {
+  grid-template-rows: 56px;
+  overflow: hidden;
+}
+
+.dt-episode-grid:not(.dt-episode-grid-expanded) .dt-episode-cell:nth-child(n + 18) {
+  display: none;
+}
+
+.dt-episode-grid-expanded {
+  height: auto;
+  overflow: visible;
+}
+
+.dt-episode-cell,
+.dt-episode-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 56px;
+  width: 56px;
+  height: 56px;
+  border: 0;
+  border-radius: 12px;
+  background: hsla(0, 0%, 100%, 0.08);
+  color: hsla(0, 0%, 100%, 0.95);
+  font-size: 18px;
+  font-weight: 500;
+  line-height: 100%;
+  cursor: pointer;
+  transition: background 0.15s ease-out;
+}
+
+.dt-episode-cell:hover,
+.dt-episode-toggle:hover {
+  background: hsla(0, 0%, 100%, 0.12);
+}
+
+.dt-episode-arrow {
+  display: block;
+  width: 24px;
+  height: 24px;
+  transition: transform 0.2s ease-out;
+}
+
+.dt-episode-arrow-open {
+  transform: rotate(180deg);
+}
+
+/* ===== 区块通用（热评 / 相关短剧 / 热门短剧） ===== */
+.dt-section,
+.dt-detail-section {
+  position: relative;
+  z-index: 1;
+  width: 1240px;
+  margin: 50px auto 0;
+  color: hsla(0, 0%, 100%, 0.95);
+}
+
+.dt-detail-section {
+  margin-top: 60px;
+}
+
+.dt-section-header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  height: 28px;
+  margin-bottom: 24px;
+  font-size: 20px;
+  line-height: 28px;
+}
+
+.dt-heading {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.dt-heading strong,
+.dt-heading span {
+  color: hsla(0, 0%, 100%, 0.95);
+  font-size: 20px;
+  font-weight: 500;
+  line-height: 28px;
+  opacity: 0.9;
+}
+
+.dt-dot {
+  width: 3.5px;
+  height: 3.5px;
+  border-radius: 50%;
+  background: hsla(0, 0%, 100%, 0.4);
+}
+
+.dt-detail-header {
+  margin: 0 0 16px;
+  color: hsla(0, 0%, 100%, 0.95);
+  font-size: 20px;
+  font-weight: 500;
+  line-height: 32px;
+  opacity: 0.9;
+}
+
+/* ===== 热评横排 ===== */
+/* 热评横排：一屏 4 张（与原站一致），超出部分隐藏（原站另有左右箭头轮播，暂不实现） */
+.dt-review-list {
+  display: flex;
+  gap: 16px;
+  width: 100%;
+  overflow: hidden;
+}
+
+.dt-review-card {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  gap: 16px;
+  flex: 0 0 calc(25% - 12px);
+  width: calc(25% - 12px);
+  height: 138px;
+  padding: 16px;
+  border-radius: 12px;
+  background: hsla(0, 0%, 100%, 0.07);
+  overflow: hidden;
+}
+
+.dt-review-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex: none;
+  width: 100%;
+  height: 24px;
+}
+
+.dt-review-user {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex: 1 1;
+  min-width: 0;
+  font-size: 12px;
+  line-height: 16px;
+}
+
+.dt-review-avatar {
+  flex: none;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  border: 0.5px solid rgba(0, 0, 0, 0.06);
+  object-fit: cover;
+}
+
+.dt-review-avatar-empty {
+  display: inline-block;
+  background: hsla(0, 0%, 100%, 0.1);
+}
+
+.dt-review-name {
+  flex: 0 1 auto;
+  color: hsla(0, 0%, 100%, 0.95);
+  font-size: 12px;
+  line-height: 16px;
+  opacity: 0.8;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.dt-rating-stars {
+  display: inline-flex;
+  gap: 2px;
+  flex: none;
+}
+
+.dt-star {
+  width: 12px;
+  height: 12px;
+}
+
+.dt-review-date {
+  flex: none;
+  color: hsla(0, 0%, 100%, 0.4);
+  font-size: 12px;
+  line-height: 16px;
+  white-space: nowrap;
+}
+
+.dt-review-content {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+  margin: 0;
+  color: hsla(0, 0%, 100%, 0.95);
+  font-size: 14px;
+  line-height: 22px;
+  opacity: 0.8;
+  white-space: pre-wrap;
+  overflow: hidden;
+}
+
+/* ===== 相关短剧 / 热门短剧网格（对照原站 pc-compact 明细页卡片） ===== */
+.dt-card-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 36px 22.333px;
+  justify-content: flex-start;
+}
+
+.dt-card {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  flex: 0 0 calc((100% - 5 * 22.333px) / 6);
+  max-width: calc((100% - 5 * 22.333px) / 6);
+  min-width: 0;
+  position: relative;
+  cursor: pointer;
+}
+
+.dt-img-container {
+  position: relative;
+  width: 100%;
+  border-radius: 12px;
+  overflow: hidden;
+  background: hsla(0, 0%, 100%, 0.06);
+}
+
+.dt-img {
+  display: block;
+  width: 100%;
+  aspect-ratio: 158 / 216;
+  object-fit: cover;
+  transition: transform 0.2s ease-out;
+}
+
+.dt-card:hover .dt-img {
+  transform: scale(1.1);
+}
+
+.dt-bottom-cover {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 64px;
+  background: linear-gradient(180deg, transparent, rgba(0, 0, 0, 0.3));
+  pointer-events: none;
+}
+
+.dt-episode {
+  position: absolute;
+  right: 8px;
+  bottom: 8px;
+  color: #fff;
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 22px;
+  text-align: right;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
+}
+
+.dt-card-title {
+  width: 100%;
+  margin: 12px 0 8px;
+  color: hsla(0, 0%, 100%, 0.95);
+  font-size: 18px;
+  font-weight: 400;
+  line-height: 28px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.dt-tags {
+  display: flex;
+  flex-wrap: wrap;
+  max-height: 25px;
+  overflow: hidden;
+  row-gap: 8px;
+}
+
+.dt-tag {
+  display: flex;
+  align-items: center;
+  height: 25px;
+  margin-right: 6px;
+  padding: 4px 8px;
+  max-width: 100px;
+  border-radius: 4px;
+  background: hsla(0, 0%, 88%, 0.06);
+  color: hsla(0, 0%, 100%, 0.5);
+  font-size: 12px;
+  line-height: 17px;
+  opacity: 0.8;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* 播放入口占位提示（播放页接入前的临时反馈） */
+.dt-notice {
+  position: fixed;
+  left: 50%;
+  bottom: 48px;
+  transform: translateX(-50%);
+  z-index: 999;
+  padding: 10px 20px;
+  border-radius: 12px;
+  background: rgba(38, 39, 41, 0.95);
+  color: hsla(0, 0%, 100%, 0.9);
+  font-size: 14px;
+  line-height: 22px;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.28);
+  pointer-events: none;
+  white-space: nowrap;
+}
+
+/* 窄屏兜底：容器宽度自适应（桌面窗口可缩放） */
+@media (max-width: 1339px) {
+  .dt-container,
+  .dt-section,
+  .dt-detail-section {
+    width: calc(100% - 64px);
+  }
+}
+
+/* ===== 演员详情页（对照原站 character 页：头像 + 信息 + 相关短剧） ===== */
+.ch-page {
+  position: relative;
+  width: 100%;
+  padding-top: 118px;
+  padding-bottom: 80px;
+  z-index: 2;
+}
+
+.ch-hero {
+  display: flex;
+  align-items: center;
+}
+
+.ch-avatar-box {
+  flex: 0 0 auto;
+  width: 120px;
+  height: 120px;
+  margin-right: 36px;
+  position: relative;
+}
+
+.ch-avatar {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  object-fit: cover;
+  display: block;
+  background: hsla(0, 0%, 100%, 0.06);
+}
+
+.ch-avatar-empty {
+  background: hsla(0, 0%, 100%, 0.06);
+}
+
+/* 头像右下角蓝V认证标识（28×28，对照原站 pc-official-icon） */
+.ch-avatar-v {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  width: 28px;
+  height: 28px;
+  display: block;
+  pointer-events: none;
+}
+
+.ch-info {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-height: 120px;
+  min-width: 0;
+}
+
+.ch-name-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.ch-name {
+  margin: 0;
+  color: hsla(0, 0%, 100%, 0.95);
+  font-family: 'PingFang SC', sans-serif;
+  font-size: 26px;
+  font-weight: 500;
+  line-height: 44px;
+}
+
+/* 姓名旁“已入驻”标识（60×26，对照原站 pc-registered-icon） */
+.ch-registered {
+  width: 60px;
+  height: 26px;
+  display: block;
+  object-fit: contain;
+  pointer-events: none;
+}
+
+.ch-role {
+  margin-top: 4px;
+  color: hsla(0, 0%, 100%, 0.4);
+  font-family: 'PingFang SC', sans-serif;
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 24px;
+}
+
+.ch-desc {
+  margin: 8px 0 0;
+  max-width: 800px;
+  color: hsla(0, 0%, 100%, 0.4);
+  font-family: 'PingFang SC', sans-serif;
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 24px;
+}
+
+.ch-stats {
+  display: flex;
+  gap: 36px;
+  margin-top: 16px;
+}
+
+.ch-stat {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+}
+
+.ch-stat-value {
+  color: hsla(0, 0%, 100%, 0.95);
+  font-family: 'Oswald', 'PingFang SC', sans-serif;
+  font-size: 22px;
+  font-weight: 500;
+  line-height: 28px;
+}
+
+.ch-stat-label {
+  color: hsla(0, 0%, 100%, 0.5);
+  font-family: 'PingFang SC', sans-serif;
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 22px;
+}
+
+.ch-section {
+  margin-top: 48px;
+}
+
+/* 最新短剧 / 最热短剧 tabs（对照原站 pc-tab：20px 500，激活橙色 #fa7705） */
+.ch-tabs {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  margin-bottom: 24px;
+}
+
+.ch-tab {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: pointer;
+  color: hsla(0, 0%, 100%, 0.4);
+  font-family: 'PingFang SC', sans-serif;
+  font-size: 20px;
+  font-weight: 500;
+  line-height: 28px;
+  transition: color 0.2s ease-out;
+}
+
+.ch-tab:hover {
+  color: hsla(0, 0%, 100%, 0.7);
+}
+
+.ch-tab-active,
+.ch-tab-active:hover {
+  color: #fa7705;
+}
+
+.ch-card-list {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 24px 16px;
+}
+
+.ch-card {
+  display: flex;
+  flex-direction: column;
+  cursor: pointer;
+  min-width: 0;
+  text-decoration: none;
+}
+
+.ch-card-cover-box {
+  position: relative;
+  width: 100%;
+  border-radius: 8px;
+  overflow: hidden;
+  background: hsla(0, 0%, 100%, 0.06);
+}
+
+.ch-card-cover {
+  width: 100%;
+  aspect-ratio: 102 / 142;
+  object-fit: cover;
+  display: block;
+  transition: transform 0.2s ease-out;
+}
+
+.ch-card:hover .ch-card-cover {
+  transform: scale(1.05);
+}
+
+.ch-card-heat {
+  position: absolute;
+  left: 6px;
+  bottom: 6px;
+  padding: 1px 6px;
+  background: rgba(0, 0, 0, 0.5);
+  border-radius: 3px;
+  color: #fff;
+  font-size: 12px;
+  line-height: 16px;
+}
+
+.ch-card-title {
+  margin-top: 10px;
+  color: hsla(0, 0%, 100%, 0.9);
+  font-family: 'PingFang SC', sans-serif;
+  font-size: 15px;
+  font-weight: 400;
+  line-height: 22px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ch-card-tags {
+  display: flex;
+  flex-wrap: wrap;
+  margin-top: 4px;
+  max-height: 22px;
+  overflow: hidden;
+  row-gap: 8px;
+}
+
+.ch-card-tag {
+  display: flex;
+  align-items: center;
+  height: 22px;
+  padding: 0 4px;
+  margin-right: 6px;
+  background: hsla(0, 0%, 88%, 0.06);
+  border-radius: 6px;
+  font-family: 'PingFang SC', sans-serif;
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 16px;
+  color: hsla(0, 0%, 100%, 0.5);
+  opacity: 0.8;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}

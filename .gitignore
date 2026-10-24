@@ -1,0 +1,7 @@
+node_modules/
+dist/
+*.log
+.screenshots/
+__pycache__/
+*.exe
+*.zip

@@ -1,0 +1,279 @@
+/* ===== HongguoTV 桌面版 —— 首页横排信息流 ===== */
+
+/* 内容区：1240px 居中，顶部给固定导航留 100px；底部留出与排间距一致的收尾间距 */
+.content {
+  margin: auto auto 0;
+  padding-top: 100px;
+  padding-bottom: 68px;
+  position: relative;
+  width: 1240px;
+  z-index: 1;
+}
+
+/* 首页有 Banner 时：固定导航由 Banner 承载避让，内容区仅需与 Banner 保持常规间距 */
+.content-has-banner {
+  padding-top: 40px;
+}
+
+.loading,
+.load-error {
+  color: hsla(0, 0%, 100%, 0.6);
+  font-size: 16px;
+  padding: 40px 0;
+}
+
+/* 栏目块 */
+.pc-section {
+  margin-bottom: 68px;
+  position: relative;
+}
+
+/* 最后一排的下边距由 .content 的 padding-bottom 承担，避免双重间距 */
+.pc-section:last-child {
+  margin-bottom: 0;
+}
+
+/* 栏目标题行 */
+.pc-header {
+  align-items: center;
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+
+.pc-title-link {
+  align-items: center;
+  display: inline-flex;
+  height: 34px;
+}
+
+.pc-title {
+  color: #fff;
+  font-family: 'PingFang SC';
+  font-size: 24px;
+  font-weight: 600;
+  letter-spacing: 0;
+  line-height: 34px;
+}
+
+.pc-title-arrow {
+  color: #fff;
+  flex: 0 0 auto;
+  height: 24px;
+  margin-left: 0;
+  width: 24px;
+}
+
+/* 轨道容器（相对定位，遮罩/箭头绝对定位） */
+.pc-rail-wrap {
+  position: relative;
+}
+
+/* 横排卡片轨道：横向滚动、隐藏滚动条 */
+.pc-card-rail {
+  display: flex;
+  gap: 24px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding-bottom: 4px;
+  scroll-behavior: smooth;
+  scrollbar-width: none;
+}
+
+.pc-card-rail::-webkit-scrollbar {
+  display: none;
+}
+
+/* 卡片 */
+.pc-card {
+  flex: 0 0 186px;
+  height: 333px;
+  width: 186px;
+  color: inherit;
+  display: block;
+}
+
+.pc-card:hover .pc-cover {
+  transform: scale(1.06);
+}
+
+/* 封面区 */
+.pc-cover-wrap {
+  background: hsla(0, 0%, 100%, 0.06);
+  border-radius: 12px;
+  height: 255px;
+  overflow: hidden;
+  position: relative;
+  width: 100%;
+}
+
+.pc-cover-wrap:after {
+  background: linear-gradient(180deg, transparent, rgba(0, 0, 0, 0.45));
+  bottom: 0;
+  content: '';
+  height: 72px;
+  left: 0;
+  pointer-events: none;
+  position: absolute;
+  right: 0;
+}
+
+.pc-cover {
+  height: 100%;
+  object-fit: cover;
+  opacity: 1;
+  transition: transform 0.2s ease-out, opacity 0.2s ease-out;
+  width: 100%;
+  display: block;
+}
+
+/* 集数徽标（右下角） */
+.pc-episode {
+  bottom: 10px;
+  color: #fff;
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 18px;
+  position: absolute;
+  right: 10px;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.36);
+}
+
+/* 标题 */
+.pc-card-title {
+  color: hsla(0, 0%, 100%, 0.9);
+  font-size: 18px;
+  font-weight: 400;
+  line-height: 25px;
+  margin: 16px 0 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  width: calc(100% - 30px);
+}
+
+/* 题材标签 */
+.pc-tags {
+  align-items: center;
+  display: flex;
+  gap: 6px;
+  height: auto;
+  margin-top: 12px;
+  min-height: 25px;
+  overflow: hidden;
+  width: 100%;
+}
+
+.pc-tag {
+  background: hsla(0, 0%, 88%, 0.06);
+  border-radius: 4px;
+  color: hsla(0, 0%, 100%, 0.5);
+  flex: 0 0 auto;
+  font-size: 12px;
+  height: 25px;
+  line-height: 17px;
+  max-width: 72px;
+  opacity: 0.8;
+  overflow: hidden;
+  padding: 4px 8px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* 边缘渐变遮罩 + 滚动箭头（到两端自动隐藏） */
+.pc-rail-mask {
+  height: 333px;
+  pointer-events: none;
+  position: absolute;
+  top: 0;
+  width: 64px;
+  z-index: 2;
+}
+
+.pc-rail-mask-left {
+  background: linear-gradient(90deg, #131414, rgba(19, 20, 20, 0));
+  left: -1px;
+}
+
+.pc-rail-mask-right {
+  background: linear-gradient(270deg, #131414, rgba(19, 20, 20, 0));
+  right: -1px;
+}
+
+/* 该方向没有更多内容时，遮罩与箭头一并隐藏 */
+.pc-mask-hidden {
+  display: none;
+}
+
+.pc-rail-arrow {
+  align-items: center;
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+  cursor: pointer;
+  display: flex;
+  height: 72px;
+  justify-content: center;
+  opacity: 0;
+  padding: 0;
+  pointer-events: auto;
+  position: absolute;
+  top: 127.5px;
+  transform: translateY(-50%);
+  transition: opacity 0.16s ease-out;
+  width: 56px;
+  z-index: 3;
+}
+
+.pc-rail-arrow-left {
+  left: 4px;
+}
+
+.pc-rail-arrow-right {
+  right: 4px;
+}
+
+.pc-rail-wrap:hover .pc-rail-arrow {
+  opacity: 1;
+}
+
+.pc-rail-arrow:hover {
+  background: transparent;
+}
+
+.pc-rail-arrow-icon {
+  height: 72px;
+  opacity: 0.8;
+  width: 56px;
+}
+
+/* 查看更多卡片：轨道末尾入口（对照原站 136×255 浅底圆角卡片） */
+.pc-view-all-card {
+  align-items: center;
+  background: hsla(0, 0%, 100%, 0.03);
+  border-radius: 12px;
+  color: #fff;
+  display: flex;
+  flex: 0 0 136px;
+  flex-direction: column;
+  gap: 8px;
+  height: 255px;
+  justify-content: center;
+  width: 136px;
+}
+
+.pc-view-all-card:hover {
+  background: hsla(0, 0%, 100%, 0.06);
+}
+
+.pc-view-all-text {
+  font-size: 14px;
+  line-height: 14px;
+  opacity: 0.7;
+}
+
+.pc-view-all-arrow {
+  height: 14px;
+  opacity: 0.7;
+  width: 14px;
+}

@@ -1,0 +1,32 @@
+// HongguoTV 桌面版 —— 预加载脚本：向页面暴露窗口控制 API
+const { contextBridge, ipcRenderer } = require('electron');
+
+contextBridge.exposeInMainWorld('hgWin', {
+  minimize: () => ipcRenderer.send('win:minimize'),
+  toggleMaximize: () => ipcRenderer.send('win:toggle-maximize'),
+  close: () => ipcRenderer.send('win:close'),
+  onStateChange: (cb) => {
+    const handler = (_event, state) => cb(state);
+    ipcRenderer.on('win:state', handler);
+    return () => ipcRenderer.removeListener('win:state', handler);
+  },
+  // 打开独立播放窗口（传剧集 ID 与单集 ID）
+  openPlayer: (seriesId, episodeId) =>
+    ipcRenderer.send('player:open', seriesId, episodeId || null),
+  // 播放窗口 logo：最小化当前播放窗口并聚焦主窗口
+  minimizeAndFocusMain: () => ipcRenderer.send('player:minimize-focus-main'),
+  // 播放窗口内点击演员：在主窗口中打开演员详情页
+  openCharacterInMain: (id) => ipcRenderer.send('player:open-character', id),
+  // 主窗口监听：主进程转发的“打开演员详情页”请求
+  onOpenCharacter: (cb) => {
+    const handler = (_event, id) => cb(id);
+    ipcRenderer.on('app:open-character', handler);
+    return () => ipcRenderer.removeListener('app:open-character', handler);
+  },
+  // 播放窗口监听：主窗口在已有播放窗口中打开新剧（SPA 内部切换）
+  onPlayerNavigate: (cb) => {
+    const handler = (_event, payload) => cb(payload || {});
+    ipcRenderer.on('player:navigate', handler);
+    return () => ipcRenderer.removeListener('player:navigate', handler);
+  }
+});

@@ -1,0 +1,258 @@
+/* ===== HongguoTV 桌面版 —— 首页 Banner 推荐剧位 ===== */
+
+/* 通栏横幅：背景大图 + 左侧独立文字图层；固定导航透明态悬浮其上（同榜单页 hero） */
+.pc-banner {
+  position: relative;
+  width: 100%;
+  min-width: 1240px;
+  height: 440px;
+  overflow: hidden;
+  background: #131414;
+  z-index: 1;
+}
+
+/* 舞台：多张幻灯片交叉淡入淡出 */
+.pc-banner-stage {
+  position: absolute;
+  inset: 0;
+}
+
+.pc-banner-slide {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.5s ease-in-out, visibility 0s linear 0.5s;
+}
+
+.pc-banner-slide-active {
+  opacity: 1;
+  visibility: visible;
+  transition: opacity 0.5s ease-in-out;
+  z-index: 1;
+}
+
+.pc-banner-bg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center top;
+}
+
+/* 可读性遮罩：左侧深色渐变保证文字清晰，底部轻压暗托住指示点 */
+.pc-banner-shade {
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(
+      90deg,
+      rgba(19, 20, 20, 0.92) 0%,
+      rgba(19, 20, 20, 0.72) 38%,
+      rgba(19, 20, 20, 0.18) 68%,
+      rgba(19, 20, 20, 0.42) 100%
+    ),
+    linear-gradient(
+      180deg,
+      rgba(19, 20, 20, 0.35) 0%,
+      transparent 22%,
+      transparent 70%,
+      rgba(19, 20, 20, 0.45) 100%
+    );
+}
+
+/* 内容区：与首页栏目同宽（1240px）居中，文字左对齐并靠近底部（与下方卡片对齐） */
+.pc-banner-body {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: flex-end;
+  height: 100%;
+  margin: 0 auto;
+  padding-bottom: 72px;
+  width: 1240px;
+}
+
+/* 文字图层（独立于背景图的 DOM 文本，保证字号与可读性） */
+.pc-banner-hit {
+  display: block;
+  height: 100%;
+  cursor: pointer;
+}
+
+.pc-banner-link {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  max-width: 640px;
+  cursor: pointer;
+}
+
+/* 艺术字剧名图：固定清晰可读的高度，宽度自适应、左对齐，不超出文字区 */
+.pc-banner-title-img {
+  display: block;
+  height: 96px;
+  width: auto;
+  max-width: 560px;
+  object-fit: contain;
+  object-position: left center;
+}
+
+/* 无艺术字图时的纯文本剧名 */
+.pc-banner-title-text {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
+  margin: 0;
+  max-width: 640px;
+  color: #fff;
+  font-family: 'PingFang SC';
+  font-size: 34px;
+  font-weight: 600;
+  line-height: 46px;
+}
+
+.pc-banner-badge {
+  display: inline-flex;
+  align-items: center;
+  flex: 0 0 auto;
+  height: 24px;
+  padding: 0 10px;
+  margin-bottom: 16px;
+  border-radius: 6px;
+  background: linear-gradient(105.2deg, #ff7e0d 0.62%, #ff9233);
+  color: hsla(0, 0%, 100%, 0.95);
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 17px;
+  letter-spacing: 0.5px;
+}
+
+.pc-banner-title {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
+  margin: 0;
+  color: #fff;
+  font-family: 'PingFang SC';
+  font-size: 34px;
+  font-weight: 600;
+  line-height: 46px;
+}
+
+/* 题材标签：胶囊样式（与详情页 dt-hero-tag 一致） */
+.pc-banner-tags {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 16px 0 0;
+  max-width: 100%;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.pc-banner-tag {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  max-width: 150px;
+  padding: 2px 8px;
+  border-radius: 6px;
+  background: hsla(0, 0%, 88%, 0.08);
+  color: hsla(0, 0%, 100%, 0.95);
+  font-size: 12px;
+  line-height: 20px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  opacity: 0.9;
+}
+
+.pc-banner-desc {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  margin: 14px 0 0;
+  max-width: 600px;
+  color: hsla(0, 0%, 100%, 0.65);
+  font-size: 16px;
+  line-height: 26px;
+  overflow: hidden;
+}
+
+/* 主按钮：与详情页「立即播放」同款橙色渐变（144×45、圆角 12） */
+.pc-banner-play {
+  position: relative;
+  z-index: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  width: 144px;
+  height: 45px;
+  margin-top: 28px;
+  padding: 0;
+  border: 0;
+  border-radius: 12px;
+  background: linear-gradient(105.2deg, #ff7e0d 0.62%, #ff9233);
+  color: hsla(0, 0%, 100%, 0.95);
+  cursor: pointer;
+  transition: filter 0.15s ease-out;
+}
+
+.pc-banner-play:hover {
+  filter: brightness(0.92);
+}
+
+.pc-banner-play-icon {
+  width: 16px;
+  height: 16px;
+  flex: none;
+}
+
+.pc-banner-play-text {
+  margin-left: 8px;
+  font-size: 16px;
+  font-weight: 500;
+  line-height: 26px;
+}
+
+/* 轮播指示点：右下角，与内容区右缘对齐；当前项为橙色渐变长条 */
+.pc-banner-dots {
+  position: absolute;
+  z-index: 2;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  width: 1240px;
+}
+
+.pc-banner-dot {
+  width: 8px;
+  height: 8px;
+  padding: 0;
+  border: 0;
+  border-radius: 4px;
+  background: hsla(0, 0%, 100%, 0.35);
+  cursor: pointer;
+  transition: width 0.2s ease-out, background 0.2s ease-out;
+}
+
+.pc-banner-dot:hover {
+  background: hsla(0, 0%, 100%, 0.6);
+}
+
+.pc-banner-dot-active {
+  width: 22px;
+  background: linear-gradient(105.2deg, #ff7e0d 0.62%, #ff9233);
+}

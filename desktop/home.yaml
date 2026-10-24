@@ -1,0 +1,410 @@
+- generic [ref=f2e3]:
+  - banner [ref=f2e5]:
+    - link [ref=f2e6] [cursor=pointer]:
+      - /url: "#"
+      - img "红果短剧logo" [ref=f2e7]
+    - group "页面导航" [ref=f2e8]:
+      - button "后退" [disabled] [ref=f2e9]
+      - button "前进" [disabled] [ref=f2e10]
+      - button "刷新" [ref=f2e11] [cursor=pointer]
+    - generic [ref=f2e12]:
+      - button "首页" [ref=f2e13] [cursor=pointer]
+      - button "分类" [ref=f2e15] [cursor=pointer]
+      - button "榜单" [ref=f2e17] [cursor=pointer]
+    - search [ref=f2e20]:
+      - searchbox "搜索短剧或演员" [ref=f2e21]
+      - button "搜索" [ref=f2e22] [cursor=pointer]
+  - main [ref=f2e25]:
+    - generic [ref=f2e27]:
+      - link [ref=f2e29] [cursor=pointer]:
+        - /url: "#"
+        - heading "热播短剧" [level=2] [ref=f2e30]
+      - generic [ref=f2e33]:
+        - button "向右查看更多" [ref=f2e34] [cursor=pointer]
+        - generic [ref=f2e37]:
+          - link "军需处长的账本" [ref=f2e38] [cursor=pointer]:
+            - /url: "#"
+            - generic [ref=f2e39]:
+              - img "军需处长的账本" [ref=f2e40]
+              - generic [ref=f2e41]: 全46集
+            - paragraph [ref=f2e42]: 军需处长的账本
+            - generic [ref=f2e43]:
+              - generic [ref=f2e44]: 战争
+              - generic [ref=f2e45]: 家国正义
+              - generic [ref=f2e46]: 忠诚男主
+          - link "扁担银行" [ref=f2e47] [cursor=pointer]:
+            - /url: "#"
+            - generic [ref=f2e48]:
+              - img "扁担银行" [ref=f2e49]
+              - generic [ref=f2e50]: 全63集
+            - paragraph [ref=f2e51]: 扁担银行
+            - generic [ref=f2e52]:
+              - generic [ref=f2e53]: 战争
+              - generic [ref=f2e54]: 抗战谍战
+              - generic [ref=f2e55]: 自我救赎
+          - link "一个人的长征" [ref=f2e56] [cursor=pointer]:
+            - /url: "#"
+            - generic [ref=f2e57]:
+              - img "一个人的长征" [ref=f2e58]
+              - generic [ref=f2e59]: 全90集
+            - paragraph [ref=f2e60]: 一个人的长征
+            - generic [ref=f2e61]:
+              - generic [ref=f2e62]: 战争
+              - generic [ref=f2e63]: 家国正义
+              - generic [ref=f2e64]: 女扮男装
+          - link "我们终将在湘江重逢" [ref=f2e65] [cursor=pointer]:
+            - /url: "#"
+            - generic [ref=f2e66]:
+              - img "我们终将在湘江重逢" [ref=f2e67]
+              - generic [ref=f2e68]: 全60集
+            - paragraph [ref=f2e69]: 我们终将在湘江重逢
+            - generic [ref=f2e70]:
+              - generic [ref=f2e71]: 战争
+              - generic [ref=f2e72]: 家国正义
+              - generic [ref=f2e73]: 穿越
+          - link "铁血信使" [ref=f2e74] [cursor=pointer]:
+            - /url: "#"
+            - generic [ref=f2e75]:
+              - img "铁血信使" [ref=f2e76]
+              - generic [ref=f2e77]: 全75集
+            - paragraph [ref=f2e78]: 铁血信使
+            - generic [ref=f2e79]:
+              - generic [ref=f2e80]: 年代
+              - generic [ref=f2e81]: 年代风云
+              - generic [ref=f2e82]: 抗战谍战
+          - link "追光前行" [ref=f2e83] [cursor=pointer]:
+            - /url: "#"
+            - generic [ref=f2e84]:
+              - img "追光前行" [ref=f2e85]
+              - generic [ref=f2e86]: 全30集
+            - paragraph [ref=f2e87]: 追光前行
+            - generic [ref=f2e88]:
+              - generic [ref=f2e89]: 战争
+              - generic [ref=f2e90]: 家国正义
+              - generic [ref=f2e91]: 热血
+          - link "持械入宋：第十季" [ref=f2e92] [cursor=pointer]:
+            - /url: "#"
+            - generic [ref=f2e93]:
+              - img "持械入宋：第十季" [ref=f2e94]
+              - generic [ref=f2e95]: 全99集
+            - paragraph [ref=f2e96]: 持械入宋：第十季
+            - generic [ref=f2e97]:
+              - generic [ref=f2e98]: 脑洞
+              - generic [ref=f2e99]: 穿越
+              - generic [ref=f2e100]: 古代
+          - link "和离后我带女儿横扫魔域" [ref=f2e101] [cursor=pointer]:
+            - /url: "#"
+            - generic [ref=f2e102]:
+              - img "和离后我带女儿横扫魔域" [ref=f2e103]
+              - generic [ref=f2e104]: 全1000集
+            - paragraph [ref=f2e105]: 和离后我带女儿横扫魔域
+            - generic [ref=f2e106]:
+              - generic [ref=f2e107]: 玄幻
+              - generic [ref=f2e108]: 系统
+              - generic [ref=f2e109]: 异界
+          - link "王妈在顾家当保姆后全家只会搞笑了" [ref=f2e110] [cursor=pointer]:
+            - /url: "#"
+            - generic [ref=f2e111]:
+              - img "王妈在顾家当保姆后全家只会搞笑了" [ref=f2e112]
+              - generic [ref=f2e113]: 全86集
+            - paragraph [ref=f2e114]: 王妈在顾家当保姆后全家只会搞笑了
+            - generic [ref=f2e115]:
+              - generic [ref=f2e116]: 喜剧
+              - generic [ref=f2e117]: 轻喜剧
+              - generic [ref=f2e118]: 反转
+          - link "查看全部" [ref=f2e119] [cursor=pointer]:
+            - /url: "#"
+    - generic [ref=f2e123]:
+      - link [ref=f2e125] [cursor=pointer]:
+        - /url: "#"
+        - heading "热播真人剧" [level=2] [ref=f2e126]
+      - generic [ref=f2e129]:
+        - button "向右查看更多" [ref=f2e130] [cursor=pointer]
+        - generic [ref=f2e133]:
+          - link "王妈在顾家当保姆后全家只会搞笑了" [ref=f2e134] [cursor=pointer]:
+            - /url: "#"
+            - generic [ref=f2e135]:
+              - img "王妈在顾家当保姆后全家只会搞笑了" [ref=f2e136]
+              - generic [ref=f2e137]: 全86集
+            - paragraph [ref=f2e138]: 王妈在顾家当保姆后全家只会搞笑了
+            - generic [ref=f2e139]:
+              - generic [ref=f2e140]: 喜剧
+              - generic [ref=f2e141]: 轻喜剧
+              - generic [ref=f2e142]: 反转
+          - link "枝头春意闹" [ref=f2e143] [cursor=pointer]:
+            - /url: "#"
+            - generic [ref=f2e144]:
+              - img "枝头春意闹" [ref=f2e145]
+              - generic [ref=f2e146]: 全79集
+            - paragraph [ref=f2e147]: 枝头春意闹
+            - generic [ref=f2e148]:
+              - generic [ref=f2e149]: 爱情
+              - generic [ref=f2e150]: 古风爱情
+              - generic [ref=f2e151]: 故人重逢
+          - link "卖掉养老房那天，我重获新生" [ref=f2e152] [cursor=pointer]:
+            - /url: "#"
+            - generic [ref=f2e153]:
+              - img "卖掉养老房那天，我重获新生" [ref=f2e154]
+              - generic [ref=f2e155]: 全64集
+            - paragraph [ref=f2e156]: 卖掉养老房那天，我重获新生
+            - generic [ref=f2e157]:
+              - generic [ref=f2e158]: 家庭
+              - generic [ref=f2e159]: 家庭伦理
+              - generic [ref=f2e160]: 女性成长
+          - link "认下混混老爹，我一路青云" [ref=f2e161] [cursor=pointer]:
+            - /url: "#"
+            - generic [ref=f2e162]:
+              - img "认下混混老爹，我一路青云" [ref=f2e163]
+              - generic [ref=f2e164]: 全75集
+            - paragraph [ref=f2e165]: 认下混混老爹，我一路青云
+            - generic [ref=f2e166]:
+              - generic [ref=f2e167]: 家庭
+              - generic [ref=f2e168]: 家庭伦理
+              - generic [ref=f2e169]: 逆风翻盘
+          - link "雾锁情迷" [ref=f2e170] [cursor=pointer]:
+            - /url: "#"
+            - generic [ref=f2e171]:
+              - img "雾锁情迷" [ref=f2e172]
+              - generic [ref=f2e173]: 全73集
+            - paragraph [ref=f2e174]: 雾锁情迷
+            - generic [ref=f2e175]:
+              - generic [ref=f2e176]: 爱情
+              - generic [ref=f2e177]: 都市爱情
+              - generic [ref=f2e178]: 日久生情
+          - link "我成全嫡孙抗旨退婚，他却慌了" [ref=f2e179] [cursor=pointer]:
+            - /url: "#"
+            - generic [ref=f2e180]:
+              - img "我成全嫡孙抗旨退婚，他却慌了" [ref=f2e181]
+              - generic [ref=f2e182]: 全73集
+            - paragraph [ref=f2e183]: 我成全嫡孙抗旨退婚，他却慌了
+            - generic [ref=f2e184]:
+              - generic [ref=f2e185]: 古装
+              - generic [ref=f2e186]: 重生逆袭
+              - generic [ref=f2e187]: 家族振兴
+          - link "人到中年：我的双眼可以看穿一切" [ref=f2e188] [cursor=pointer]:
+            - /url: "#"
+            - generic [ref=f2e189]:
+              - img "人到中年：我的双眼可以看穿一切" [ref=f2e190]
+              - generic [ref=f2e191]: 全80集
+            - paragraph [ref=f2e192]: 人到中年：我的双眼可以看穿一切
+            - generic [ref=f2e193]:
+              - generic [ref=f2e194]: 剧情
+              - generic [ref=f2e195]: 奇幻脑洞
+              - generic [ref=f2e196]: 异能
+          - link "恶犬在身边" [ref=f2e197] [cursor=pointer]:
+            - /url: "#"
+            - generic [ref=f2e198]:
+              - img "恶犬在身边" [ref=f2e199]
+              - generic [ref=f2e200]: 全76集
+            - paragraph [ref=f2e201]: 恶犬在身边
+            - generic [ref=f2e202]:
+              - generic [ref=f2e203]: 爱情
+              - generic [ref=f2e204]: 都市爱情
+              - generic [ref=f2e205]: 故人重逢
+          - link "掀桌2以身入局" [ref=f2e206] [cursor=pointer]:
+            - /url: "#"
+            - generic [ref=f2e207]:
+              - img "掀桌2以身入局" [ref=f2e208]
+              - generic [ref=f2e209]: 全84集
+            - paragraph [ref=f2e210]: 掀桌2以身入局
+            - generic [ref=f2e211]:
+              - generic [ref=f2e212]: 剧情
+              - generic [ref=f2e213]: 偏门传奇
+              - generic [ref=f2e214]: 现代
+          - link "查看全部" [ref=f2e215] [cursor=pointer]:
+            - /url: "#"
+    - generic [ref=f2e219]:
+      - link [ref=f2e221] [cursor=pointer]:
+        - /url: "#"
+        - heading "热播漫剧" [level=2] [ref=f2e222]
+      - generic [ref=f2e225]:
+        - button "向右查看更多" [ref=f2e226] [cursor=pointer]
+        - generic [ref=f2e229]:
+          - link "和离后我带女儿横扫魔域" [ref=f2e230] [cursor=pointer]:
+            - /url: "#"
+            - generic [ref=f2e231]:
+              - img "和离后我带女儿横扫魔域" [ref=f2e232]
+              - generic [ref=f2e233]: 全1000集
+            - paragraph [ref=f2e234]: 和离后我带女儿横扫魔域
+            - generic [ref=f2e235]:
+              - generic [ref=f2e236]: 玄幻
+              - generic [ref=f2e237]: 系统
+              - generic [ref=f2e238]: 异界
+          - link "聚宝仙盆之杂灵根才是真BOSS第十四季" [ref=f2e239] [cursor=pointer]:
+            - /url: "#"
+            - generic [ref=f2e240]:
+              - img "聚宝仙盆之杂灵根才是真BOSS第十四季" [ref=f2e241]
+              - generic [ref=f2e242]: 全222集
+            - paragraph [ref=f2e243]: 聚宝仙盆之杂灵根才是真BOSS第十四季
+            - generic [ref=f2e244]:
+              - generic [ref=f2e245]: 玄幻
+              - generic [ref=f2e246]: 逆袭
+              - generic [ref=f2e247]: 修真
+          - link "觉醒伪神：神明弃我我自为神7" [ref=f2e248] [cursor=pointer]:
+            - /url: "#"
+            - generic [ref=f2e249]:
+              - img "觉醒伪神：神明弃我我自为神7" [ref=f2e250]
+              - generic [ref=f2e251]: 全193集
+            - paragraph [ref=f2e252]: 觉醒伪神：神明弃我我自为神7
+            - generic [ref=f2e253]:
+              - generic [ref=f2e254]: 脑洞
+              - generic [ref=f2e255]: 逆袭
+              - generic [ref=f2e256]: 异能
+          - link "边军破刀：一路砍到裂土封王" [ref=f2e257] [cursor=pointer]:
+            - /url: "#"
+            - generic [ref=f2e258]:
+              - img "边军破刀：一路砍到裂土封王" [ref=f2e259]
+              - generic [ref=f2e260]: 全539集
+            - paragraph [ref=f2e261]: 边军破刀：一路砍到裂土封王
+            - generic [ref=f2e262]:
+              - generic [ref=f2e263]: 剧情
+              - generic [ref=f2e264]: 穿越
+              - generic [ref=f2e265]: 逆袭
+          - link "谁让这个文盲修仙的第五季" [ref=f2e266] [cursor=pointer]:
+            - /url: "#"
+            - generic [ref=f2e267]:
+              - img "谁让这个文盲修仙的第五季" [ref=f2e268]
+              - generic [ref=f2e269]: 全184集
+            - paragraph [ref=f2e270]: 谁让这个文盲修仙的第五季
+            - generic [ref=f2e271]:
+              - generic [ref=f2e272]: 玄幻
+              - generic [ref=f2e273]: 穿越
+              - generic [ref=f2e274]: 修真
+          - link "一书解尽天下忧" [ref=f2e275] [cursor=pointer]:
+            - /url: "#"
+            - generic [ref=f2e276]:
+              - img "一书解尽天下忧" [ref=f2e277]
+              - generic [ref=f2e278]: 全308集
+            - paragraph [ref=f2e279]: 一书解尽天下忧
+            - generic [ref=f2e280]:
+              - generic [ref=f2e281]: 脑洞
+              - generic [ref=f2e282]: 穿越
+              - generic [ref=f2e283]: 系统
+          - link "天道余途：苍途问道" [ref=f2e284] [cursor=pointer]:
+            - /url: "#"
+            - generic [ref=f2e285]:
+              - img "天道余途：苍途问道" [ref=f2e286]
+              - generic [ref=f2e287]: 全1000集
+            - paragraph [ref=f2e288]: 天道余途：苍途问道
+            - generic [ref=f2e289]:
+              - generic [ref=f2e290]: 玄幻
+              - generic [ref=f2e291]: 逆袭
+              - generic [ref=f2e292]: 异界
+          - link "家有五女，穿越来的他连夜搞事业啦" [ref=f2e293] [cursor=pointer]:
+            - /url: "#"
+            - generic [ref=f2e294]:
+              - img "家有五女，穿越来的他连夜搞事业啦" [ref=f2e295]
+              - generic [ref=f2e296]: 全1000集
+            - paragraph [ref=f2e297]: 家有五女，穿越来的他连夜搞事业啦
+            - generic [ref=f2e298]:
+              - generic [ref=f2e299]: 剧情
+              - generic [ref=f2e300]: 穿越
+              - generic [ref=f2e301]: 逆袭
+          - link "让你当保安，没让你镇压SSS级诡异" [ref=f2e302] [cursor=pointer]:
+            - /url: "#"
+            - generic [ref=f2e303]:
+              - img "让你当保安，没让你镇压SSS级诡异" [ref=f2e304]
+              - generic [ref=f2e305]: 全179集
+            - paragraph [ref=f2e306]: 让你当保安，没让你镇压SSS级诡异
+            - generic [ref=f2e307]:
+              - generic [ref=f2e308]: 脑洞
+              - generic [ref=f2e309]: 系统
+              - generic [ref=f2e310]: 升级流
+          - link "查看全部" [ref=f2e311] [cursor=pointer]:
+            - /url: "#"
+    - generic [ref=f2e315]:
+      - link [ref=f2e317] [cursor=pointer]:
+        - /url: "#"
+        - heading "热播AI剧" [level=2] [ref=f2e318]
+      - generic [ref=f2e321]:
+        - button "向右查看更多" [ref=f2e322] [cursor=pointer]
+        - generic [ref=f2e325]:
+          - link "持械入宋：第十季" [ref=f2e326] [cursor=pointer]:
+            - /url: "#"
+            - generic [ref=f2e327]:
+              - img "持械入宋：第十季" [ref=f2e328]
+              - generic [ref=f2e329]: 全99集
+            - paragraph [ref=f2e330]: 持械入宋：第十季
+            - generic [ref=f2e331]:
+              - generic [ref=f2e332]: 脑洞
+              - generic [ref=f2e333]: 穿越
+              - generic [ref=f2e334]: 古代
+          - link "大唐憨婿之我姐姐是太子妃第四季" [ref=f2e335] [cursor=pointer]:
+            - /url: "#"
+            - generic [ref=f2e336]:
+              - img "大唐憨婿之我姐姐是太子妃第四季" [ref=f2e337]
+              - generic [ref=f2e338]: 全263集
+            - paragraph [ref=f2e339]: 大唐憨婿之我姐姐是太子妃第四季
+            - generic [ref=f2e340]:
+              - generic [ref=f2e341]: 宫廷
+              - generic [ref=f2e342]: 古代
+          - link "备用联系人（完）" [ref=f2e343] [cursor=pointer]:
+            - /url: "#"
+            - generic [ref=f2e344]:
+              - img "备用联系人（完）" [ref=f2e345]
+              - generic [ref=f2e346]: 全106集
+            - paragraph [ref=f2e347]: 备用联系人（完）
+            - generic [ref=f2e348]:
+              - generic [ref=f2e349]: 恋爱
+              - generic [ref=f2e350]: 都市
+          - link "婆婆装瘫七年，我高调离婚！" [ref=f2e351] [cursor=pointer]:
+            - /url: "#"
+            - generic [ref=f2e352]:
+              - img "婆婆装瘫七年，我高调离婚！" [ref=f2e353]
+              - generic [ref=f2e354]: 全83集
+            - paragraph [ref=f2e355]: 婆婆装瘫七年，我高调离婚！
+            - generic [ref=f2e356]:
+              - generic [ref=f2e357]: 剧情
+              - generic [ref=f2e358]: 都市
+          - link "修仙满级回现代，我让全家横着走" [ref=f2e359] [cursor=pointer]:
+            - /url: "#"
+            - generic [ref=f2e360]:
+              - img "修仙满级回现代，我让全家横着走" [ref=f2e361]
+              - generic [ref=f2e362]: 全110集
+            - paragraph [ref=f2e363]: 修仙满级回现代，我让全家横着走
+            - generic [ref=f2e364]:
+              - generic [ref=f2e365]: 剧情
+              - generic [ref=f2e366]: 穿越
+              - generic [ref=f2e367]: 都市
+          - link "持械入宋：第九季" [ref=f2e368] [cursor=pointer]:
+            - /url: "#"
+            - generic [ref=f2e369]:
+              - img "持械入宋：第九季" [ref=f2e370]
+              - generic [ref=f2e371]: 全100集
+            - paragraph [ref=f2e372]: 持械入宋：第九季
+            - generic [ref=f2e373]:
+              - generic [ref=f2e374]: 脑洞
+              - generic [ref=f2e375]: 穿越
+              - generic [ref=f2e376]: 古代
+          - link "反向拿捏：和闺蜜穿七零带着婆婆一起离" [ref=f2e377] [cursor=pointer]:
+            - /url: "#"
+            - generic [ref=f2e378]:
+              - img "反向拿捏：和闺蜜穿七零带着婆婆一起离" [ref=f2e379]
+              - generic [ref=f2e380]: 全126集
+            - paragraph [ref=f2e381]: 反向拿捏：和闺蜜穿七零带着婆婆一起离
+            - generic [ref=f2e382]:
+              - generic [ref=f2e383]: 剧情
+              - generic [ref=f2e384]: 穿越
+              - generic [ref=f2e385]: 逆袭
+          - link "一身腱子肉，乱世做谋臣" [ref=f2e386] [cursor=pointer]:
+            - /url: "#"
+            - generic [ref=f2e387]:
+              - img "一身腱子肉，乱世做谋臣" [ref=f2e388]
+              - generic [ref=f2e389]: 全136集
+            - paragraph [ref=f2e390]: 一身腱子肉，乱世做谋臣
+            - generic [ref=f2e391]:
+              - generic [ref=f2e392]: 脑洞
+              - generic [ref=f2e393]: 穿越
+              - generic [ref=f2e394]: 系统
+          - link "一双手闯出一片天" [ref=f2e395] [cursor=pointer]:
+            - /url: "#"
+            - generic [ref=f2e396]:
+              - img "一双手闯出一片天" [ref=f2e397]
+              - generic [ref=f2e398]: 全126集
+            - paragraph [ref=f2e399]: 一双手闯出一片天
+            - generic [ref=f2e400]:
+              - generic [ref=f2e401]: 剧情
+              - generic [ref=f2e402]: 重生
+              - generic [ref=f2e403]: 逆袭
+          - link "查看全部" [ref=f2e404] [cursor=pointer]:
+            - /url: "#"

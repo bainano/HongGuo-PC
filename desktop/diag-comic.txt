@@ -1,0 +1,1 @@
+{"activeType":"漫画","errorText":"漫画分类暂未开放：原站漫画为独立内容源（/comic），后端分类接口未接入，待后端补充漫画数据源后即可显示。","loading":false}

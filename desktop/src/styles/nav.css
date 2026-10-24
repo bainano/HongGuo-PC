@@ -1,0 +1,390 @@
+/* ===== HongguoTV 桌面版 —— 顶部导航 + 窗口控制 ===== */
+
+.pc-container {
+  min-width: 1240px;
+}
+
+/* 顶部导航区（含窗口控制按钮的宿主）：fixed 悬浮覆盖（不占文档流），滚动渐变不透明 */
+.pc-page {
+  --pc-nav-brand-opacity: 1;
+  --pc-nav-brand-pointer-events: auto;
+  --pc-nav-surface-opacity: 0;
+  background: transparent;
+  -webkit-user-select: none;
+  user-select: none;
+  height: 64px;
+  left: 0;
+  position: fixed;
+  top: 0;
+  width: 100%;
+  z-index: 100;
+  -webkit-app-region: drag;
+}
+
+.pc-page:before {
+  background: #131414;
+  bottom: 0;
+  content: '';
+  left: 0;
+  opacity: var(--pc-nav-surface-opacity);
+  position: absolute;
+  right: 0;
+  top: 0;
+  transition: opacity 0.08s linear;
+}
+
+/* header：品牌 + 链接 + 搜索；右缘与窗口按钮区保持最小 16px 间距 */
+.pc-page .pc-container-header {
+  align-items: center;
+  display: flex;
+  height: 64px;
+  margin-left: 16px;
+  margin-right: 140px;
+  position: relative;
+  max-width: 1240px;
+  z-index: 1;
+}
+
+.pc-page .pc-brand-link {
+  display: flex;
+  height: 32px;
+  margin-right: 24px;
+  opacity: var(--pc-nav-brand-opacity);
+  pointer-events: var(--pc-nav-brand-pointer-events);
+  transition: opacity 0.12s ease-out;
+  width: 110px;
+}
+
+/* 导航工具插入 logo 与链接之间 */
+.pc-page .pc-container-header .nv-tools {
+  margin-right: 32px;
+}
+
+.pc-page .pc-icon-link {
+  align-items: center;
+  cursor: pointer;
+  display: flex;
+  height: 32px;
+  object-fit: contain;
+  object-position: left center;
+  width: 110px;
+  z-index: 1;
+}
+
+.pc-page .links {
+  align-items: center;
+  display: flex;
+}
+
+.pc-page .pc-link {
+  align-items: center;
+  background: none;
+  border: 0;
+  color: #fff;
+  cursor: pointer;
+  display: flex;
+  font-family: 'PingFang SC';
+  font-size: 16px;
+  font-style: normal;
+  font-weight: 500;
+  height: 64px;
+  line-height: normal;
+  margin-right: 40px;
+  opacity: 0.4;
+  padding: 0;
+  transition: opacity 0.2s ease-out;
+  -webkit-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+
+.pc-page .pc-link:hover,
+.pc-page .pc-link-active {
+  opacity: 0.9;
+}
+
+/* 分类 / 榜单 下拉 */
+.pc-page .pc-dropdown-nav {
+  height: 64px;
+  position: relative;
+}
+
+.pc-page .pc-dropdown-nav:focus-within .pc-dropdown-menu,
+.pc-page .pc-dropdown-nav:hover .pc-dropdown-menu {
+  opacity: 1;
+  pointer-events: auto;
+  transition: opacity 0.16s ease-out, visibility 0s;
+  visibility: visible;
+}
+
+.pc-page .pc-dropdown-menu {
+  -webkit-backdrop-filter: blur(20px);
+  backdrop-filter: blur(20px);
+  background: rgba(38, 39, 41, 0.95);
+  border-radius: 12px;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.28);
+  display: flex;
+  flex-direction: column;
+  left: -10px;
+  opacity: 0;
+  overflow: hidden;
+  padding: 4px 0;
+  pointer-events: none;
+  position: absolute;
+  top: 56px;
+  transition: opacity 0.16s ease-in, visibility 0s linear 0.16s;
+  visibility: hidden;
+  width: 160px;
+}
+
+.pc-page .pc-dropdown-menu a,
+.pc-page .pc-dropdown-menu .pc-dropdown-item {
+  align-items: center;
+  background: none;
+  border: 0;
+  color: hsla(0, 0%, 100%, 0.9);
+  cursor: pointer;
+  display: flex;
+  font-family: 'PingFang SC';
+  font-size: 16px;
+  font-weight: 500;
+  height: 54px;
+  justify-content: center;
+  line-height: 22px;
+  padding: 16px 32px;
+  transition: background-color 0.16s ease;
+  white-space: nowrap;
+  width: 100%;
+}
+
+.pc-page .pc-dropdown-menu a:focus-visible,
+.pc-page .pc-dropdown-menu a:hover,
+.pc-page .pc-dropdown-menu a[aria-current],
+.pc-page .pc-dropdown-menu .pc-dropdown-item:focus-visible,
+.pc-page .pc-dropdown-menu .pc-dropdown-item:hover {
+  background: hsla(0, 0%, 100%, 0.06);
+  color: #fff;
+}
+
+/* 搜索框 */
+.pc-page .pc-actions {
+  align-items: center;
+  display: flex;
+  height: 40px;
+  margin-left: auto;
+}
+
+.pc-page .pc-search-box {
+  flex: 0 0 auto;
+  height: 40px;
+  margin-left: auto;
+  position: relative;
+  width: 280px;
+}
+
+.pc-form {
+  align-items: center;
+  background: hsla(0, 0%, 88%, 0.08);
+  border-radius: 12px;
+  display: flex;
+  height: 40px;
+  overflow: hidden;
+  width: 100%;
+}
+
+.pc-input {
+  background: transparent;
+  border: 0;
+  caret-color: #fa7705;
+  color: hsla(0, 0%, 100%, 0.7);
+  flex: 1 1;
+  font-family: 'PingFang SC';
+  font-size: 14px;
+  font-weight: 400;
+  height: 100%;
+  line-height: 26px;
+  margin: 0;
+  min-width: 0;
+  outline: none;
+  padding: 7px 4px 7px 16px;
+}
+
+.pc-input::-webkit-input-placeholder {
+  color: hsla(0, 0%, 100%, 0.4);
+}
+.pc-input::placeholder {
+  color: hsla(0, 0%, 100%, 0.4);
+}
+.pc-input::-webkit-search-cancel-button {
+  display: none;
+}
+
+.pc-submit {
+  align-items: center;
+  background: transparent;
+  border: 0;
+  color: hsla(0, 0%, 100%, 0.7);
+  cursor: pointer;
+  display: flex;
+  height: 40px;
+  justify-content: flex-end;
+  margin: 0;
+  min-width: 52px;
+  outline: none;
+  padding: 0 16px 0 8px;
+}
+
+.pc-submit:focus-visible {
+  color: #fff;
+}
+
+.pc-submit-text {
+  font-family: 'PingFang SC';
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 26px;
+  white-space: nowrap;
+  display: none;
+}
+
+.pc-search-icon {
+  flex: 0 0 auto;
+  height: 15px;
+  width: 14px;
+}
+
+.pc-search-box:focus-within .pc-search-icon {
+  display: none;
+}
+.pc-search-box:focus-within .pc-submit-text {
+  display: block;
+}
+
+/* 页面内可交互元素不参与窗口拖拽 */
+.pc-page a,
+.pc-page form,
+.pc-page input,
+.pc-page button,
+.hg-win-controls {
+  -webkit-app-region: no-drag;
+}
+
+/* ===== 窗口控制三键（32×32、图标 14px、hover 淡背景+亮白） ===== */
+.hg-win-controls {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  display: flex;
+  align-items: center;
+  height: 32px;
+  z-index: 210;
+}
+
+.hg-win-btn {
+  width: 32px;
+  height: 32px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: hsla(0, 0%, 100%, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: default;
+  -webkit-app-region: no-drag;
+  transition: opacity 0.2s ease-out;
+}
+
+.hg-win-btn svg {
+  width: 14px;
+  height: 14px;
+  display: block;
+  pointer-events: none;
+}
+
+.hg-win-btn:hover {
+  background: hsla(0, 0%, 100%, 0.06);
+  color: hsla(0, 0%, 100%, 0.9);
+}
+
+/* ===== 标题栏导航工具（后退 / 前进 / 刷新，主窗口与播放窗口共用） ===== */
+.nv-tools {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex: none;
+}
+
+.nv-tool-btn {
+  width: 34px;
+  height: 34px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: hsla(0, 0%, 100%, 0.05);
+  color: hsla(0, 0%, 100%, 0.55);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  -webkit-app-region: no-drag;
+  transition: background 0.2s ease-out, color 0.2s ease-out, opacity 0.2s ease-out;
+}
+
+.nv-tool-btn svg {
+  width: 17px;
+  height: 17px;
+  display: block;
+  pointer-events: none;
+}
+
+.nv-tool-btn:hover:not(:disabled) {
+  background: hsla(0, 0%, 100%, 0.12);
+  color: hsla(0, 0%, 100%, 0.95);
+}
+
+.nv-tool-btn:disabled {
+  background: transparent;
+  opacity: 0.3;
+  cursor: default;
+}
+
+/* 播放窗口“回到主界面”按钮（仿哔哩哔哩首页导航：图标 + 文字的胶囊按钮） */
+.tb-logo {
+  flex: none;
+  height: 34px;
+  margin: 0;
+  padding: 0 14px 0 10px;
+  border: 0;
+  border-radius: 17px;
+  background: hsla(0, 0%, 100%, 0.08);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  -webkit-app-region: no-drag;
+  transition: background 0.2s ease-out;
+}
+
+.tb-logo:hover {
+  background: hsla(0, 0%, 100%, 0.16);
+}
+
+.tb-logo-img {
+  width: 18px;
+  height: 18px;
+  display: block;
+  pointer-events: none;
+}
+
+.tb-logo-text {
+  color: hsla(0, 0%, 100%, 0.9);
+  font-size: 13px;
+  line-height: 1;
+  font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif;
+  white-space: nowrap;
+  pointer-events: none;
+}

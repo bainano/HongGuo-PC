@@ -1,0 +1,158 @@
+/* ===== HongguoTV 桌面版 —— 全局基础 ===== */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+html,
+body {
+  background: #131414;
+  color: #fff;
+  font-family: 'PingFang SC', 'Microsoft YaHei', 'Segoe UI', sans-serif;
+  height: 100%;
+}
+
+/* 隐藏滚动条（全局默认，页面与横排轨道均不显示滚动条） */
+html,
+body {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+html::-webkit-scrollbar,
+body::-webkit-scrollbar,
+*::-webkit-scrollbar {
+  display: none;
+  width: 0;
+  height: 0;
+}
+
+a,
+a:active,
+a:hover,
+a:link,
+a:visited {
+  color: inherit;
+  text-decoration: none;
+}
+
+h1,
+h2,
+p {
+  margin: 0;
+}
+
+/* ===== 骨架屏（替代“加载中…”文字） ===== */
+.sk {
+  position: relative;
+  overflow: hidden;
+  background: hsla(0, 0%, 100%, 0.06);
+  border-radius: 8px;
+}
+
+/* 微光扫过动画 */
+.sk::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  transform: translateX(-100%);
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    hsla(0, 0%, 100%, 0.05) 50%,
+    transparent 100%
+  );
+  animation: sk-shimmer 1.4s ease-in-out infinite;
+}
+
+@keyframes sk-shimmer {
+  to {
+    transform: translateX(100%);
+  }
+}
+
+.sk-line {
+  border-radius: 6px;
+}
+
+/* 榜单/搜索卡片骨架 */
+.sk-cover {
+  flex: 0 0 auto;
+  width: 160px;
+  height: 224px;
+  border-radius: 8px;
+}
+
+.sk-episode-row {
+  display: flex;
+  gap: 12px;
+  margin-top: auto;
+  padding-top: 24px;
+}
+
+/* 首页骨架 */
+.sk-banner {
+  width: 100%;
+  min-width: 1240px;
+  height: 440px;
+  border-radius: 0;
+}
+
+.sk-section {
+  margin-top: 40px;
+}
+
+.sk-rail {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 20px;
+}
+
+/* 海报网格卡片骨架 */
+.sk-poster {
+  width: 100%;
+  aspect-ratio: 160 / 224;
+  border-radius: 8px;
+}
+
+/* 详情页骨架 */
+.sk-detail {
+  display: flex;
+  gap: 40px;
+  width: 1240px;
+  margin: 104px auto 0;
+}
+
+.sk-detail-cover {
+  flex: 0 0 auto;
+  width: 260px;
+  height: 364px;
+  border-radius: 12px;
+}
+
+.sk-detail-info {
+  flex: 1 1;
+  min-width: 0;
+}
+
+/* 演员页骨架 */
+.sk-character {
+  width: 1240px;
+  margin: 104px auto 0;
+}
+
+.sk-character-head {
+  display: flex;
+  gap: 24px;
+  align-items: center;
+}
+
+.sk-avatar {
+  flex: 0 0 auto;
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+}

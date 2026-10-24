@@ -1,0 +1,247 @@
+/* ===== HongguoTV 桌面版 —— 分类页（对照原站结构） ===== */
+
+/* 页面容器：flex 纵向、占满视口高 */
+.cat-root {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  min-width: 1240px;
+  position: relative;
+  z-index: 1;
+}
+
+/* ---- 背景层 cat-bg：920px 高、径向渐变光晕 + 深色底 ----
+   注意：类名刻意避开首页卡片封面的 .pc-cover（同名会在全局级联中互相覆盖）。 */
+.cat-bg {
+  height: 920px; /* 从视口顶开始（导航 fixed 悬浮不占位），透明时露出光晕 */
+  left: 0;
+  overflow: hidden;
+  pointer-events: none;
+  position: absolute;
+  top: 0;
+  width: 100%;
+  z-index: 0;
+}
+
+.cat-bg-img {
+  aspect-ratio: 1920/920;
+  background:
+    radial-gradient(
+      ellipse 79.79% 63.64% at 51.35% -3.04%,
+      rgba(250, 119, 5, 0.1) 0,
+      transparent 100%
+    ),
+    radial-gradient(
+      ellipse 37.71% 88.68% at 111.22% -1.29%,
+      rgba(58, 227, 221, 0.1) 0,
+      transparent 100%
+    ),
+    #131414;
+  left: 50%;
+  position: absolute;
+  transform: translateX(-50%);
+  -webkit-user-select: none;
+  user-select: none;
+  width: 1920px;
+}
+
+/* ---- 分类导航：类型 + 题材标签（margin 134px auto 40px） ---- */
+.pc-category-nav {
+  margin: 134px auto 40px;
+  width: 1240px;
+  z-index: 2;
+  position: relative;
+}
+
+.pc-content-types,
+.cat-nav-tags {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+}
+
+.pc-content-types {
+  gap: 40px;
+  height: 32px;
+  margin-bottom: 20px;
+}
+
+.pc-content-type {
+  align-items: center;
+  background: none;
+  border: 0;
+  cursor: pointer;
+  display: flex;
+  flex: none;
+  font-family: 'PingFang SC';
+  font-size: 20px;
+  font-weight: 500;
+  height: 32px;
+  letter-spacing: 0;
+  line-height: 32px;
+  opacity: 0.9;
+  padding: 0;
+}
+
+.pc-content-type-text {
+  color: hsla(0, 0%, 100%, 0.5);
+  font: inherit;
+  white-space: nowrap;
+}
+
+.pc-content-type.pc-active .pc-content-type-text {
+  color: hsla(0, 0%, 100%, 0.95);
+}
+
+.cat-nav-tags {
+  gap: 20px 24px;
+  padding-left: 0;
+}
+
+.cat-nav-tag {
+  background: none;
+  border: 0;
+  color: hsla(0, 0%, 100%, 0.5);
+  cursor: pointer;
+  font-family: 'PingFang SC';
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 22px;
+  opacity: 0.9;
+  padding: 0;
+  transition: color 70ms ease;
+}
+
+.cat-nav-tag:hover,
+.cat-nav-tag.pc-active {
+  color: hsla(0, 0%, 100%, 0.95);
+}
+
+/* ---- 列表区：卡片封面网格 ---- */
+.pc-list-section {
+  flex: none;
+  position: relative;
+  width: 100%;
+  z-index: 1;
+}
+
+.pc-list-page {
+  overflow: hidden;
+  position: relative;
+  z-index: 1;
+}
+
+.pc-list-container {
+  margin: 0 auto;
+  width: 1240px;
+}
+
+.cat-card-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 40px 22.333px;
+  justify-content: flex-start;
+  padding: 0;
+}
+
+/* 分页：复用 rank-pagination 样式；列表区收尾间距由分页 margin 提供 */
+.cat-pagination {
+  margin: 20px 0 80px;
+}
+
+/* 加载 / 出错 / 空列表时无分页，用 padding 收尾 */
+.pc-list-container > .loading,
+.pc-list-container > .load-error {
+  padding-bottom: 80px;
+}
+
+.cat-card {
+  align-items: flex-start;
+  cursor: pointer;
+  display: flex;
+  flex: 1 0 calc((100% - 5 * 22.333px) / 6);
+  flex-direction: column;
+  justify-content: flex-start;
+  max-width: calc((100% - 5 * 22.333px) / 6);
+  min-width: 0;
+  position: relative;
+}
+
+.cat-img-container {
+  border-radius: 12px;
+  overflow: hidden;
+  position: relative;
+  width: 100%;
+}
+
+.cat-img {
+  aspect-ratio: 158/216;
+  object-fit: cover;
+  opacity: 1;
+  transition: transform 0.2s ease-out, opacity 0.2s ease-out;
+  width: 100%;
+  display: block;
+}
+
+.cat-card:hover .cat-img {
+  transform: scale(1.1);
+}
+
+.cat-episode {
+  bottom: 8px;
+  color: #fff;
+  font-family: 'PingFang SC';
+  font-size: 14px;
+  font-weight: 400;
+  letter-spacing: 0;
+  line-height: 22px;
+  position: absolute;
+  right: 8px;
+  text-align: right;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
+}
+
+.cat-card-title {
+  color: hsla(0, 0%, 100%, 0.95);
+  cursor: pointer;
+  font-family: 'PingFang SC';
+  font-size: 18px;
+  font-weight: 400;
+  letter-spacing: 0;
+  line-height: 28px;
+  margin: 12px 0 8px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  width: 100%;
+}
+
+.cat-tags {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  max-height: 25px;
+  overflow: hidden;
+  width: 100%;
+}
+
+.cat-tag {
+  align-items: center;
+  background: hsla(0, 0%, 88%, 0.06);
+  border-radius: 4px;
+  color: hsla(0, 0%, 100%, 0.5);
+  display: flex;
+  font-family: 'PingFang SC';
+  font-size: 12px;
+  font-weight: 400;
+  height: 25px;
+  letter-spacing: 0;
+  line-height: 17px;
+  margin-right: 6px;
+  max-width: 100px;
+  opacity: 0.8;
+  overflow: hidden;
+  padding: 4px 8px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}

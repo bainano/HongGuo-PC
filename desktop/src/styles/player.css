@@ -1,0 +1,733 @@
+/* ===== 独立播放窗口外壳（标题栏 + 播放器页） ===== */
+.pl-win-root {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  width: 100%;
+  background: #121212;
+  overflow: hidden;
+}
+
+/* 标题栏：可拖拽，左起 logo（回主窗口）+ 导航工具（后退/前进/刷新），右侧窗口控制三键 */
+.pl-titlebar {
+  flex-shrink: 0;
+  height: 64px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 0 16px;
+  background: #121212;
+  -webkit-app-region: drag;
+  position: relative;
+  z-index: 200;
+}
+.pl-titlebar .hg-win-controls {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  height: 32px;
+}
+.pl-titlebar .hg-win-btn {
+  -webkit-app-region: no-drag;
+}
+
+/* ===== 播放页主体（对照静态原版：左播放器 + 右信息栏，占满标题栏下方空间） ===== */
+.pl-page {
+  flex: 1;
+  min-height: 0;
+  width: 100%;
+  background: #121212;
+  overflow: hidden;
+}
+
+.pl-container {
+  height: 100%;
+  width: 100%;
+}
+
+/* 主体：左播放器 + 右侧栏 */
+.pl-player {
+  display: flex;
+  height: 100%;
+  width: 100%;
+}
+
+.pl-left {
+  flex: 1 1;
+  min-width: 0;
+  height: 100%;
+  background: #000;
+  position: relative;
+}
+
+.pl-stage {
+  height: 100%;
+  width: 100%;
+  background: #000;
+  border-radius: 0;
+  overflow: hidden;
+  position: relative;
+}
+
+/* 视频区域 */
+.pl-video-wrap {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  background: #000;
+  cursor: pointer;
+}
+.pl-video {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  background: #000;
+  display: block;
+}
+
+/* 加载中 */
+.pl-loading {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+}
+.pl-spinner {
+  width: 40px;
+  height: 40px;
+  border: 3px solid rgba(255, 255, 255, 0.2);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: pl-spin 0.8s linear infinite;
+}
+@keyframes pl-spin { to { transform: rotate(360deg); } }
+
+/* 错误覆盖 */
+.pl-error-overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  background: rgba(0, 0, 0, 0.7);
+  color: #fff;
+  font-size: 14px;
+}
+.pl-retry-btn {
+  padding: 6px 18px;
+  background: rgba(255, 255, 255, 0.16);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 4px;
+  color: #fff;
+  cursor: pointer;
+}
+.pl-retry-btn:hover { background: rgba(255, 255, 255, 0.26); }
+
+/* 中央播放按钮 */
+.pl-center-play {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+}
+.pl-center-play svg {
+  filter: drop-shadow(0 2px 12px rgba(0, 0, 0, 0.5));
+}
+
+/* 控制栏 */
+.pl-controls {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  padding: 0 20px 16px;
+  background-image: linear-gradient(180deg, transparent -1.79%, rgba(0, 0, 0, 0.2) 97.36%);
+  opacity: 0;
+  transition: opacity 0.2s;
+  user-select: none;
+  box-sizing: border-box;
+}
+.pl-controls-show { opacity: 1; }
+
+/* 进度条 */
+.pl-progress {
+  position: relative;
+  width: 100%;
+  height: 18px;
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  margin-bottom: 8px;
+}
+.pl-progress-bg {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 7px;
+  background: hsla(0, 0%, 85%, 0.2);
+  border-radius: 2px;
+}
+.pl-progress-buffered {
+  position: absolute;
+  left: 0;
+  height: 7px;
+  background: hsla(0, 0%, 100%, 0.3);
+  border-radius: 2px;
+}
+.pl-progress-played {
+  position: absolute;
+  left: 0;
+  height: 7px;
+  background: linear-gradient(93.06deg, #ff7e0d 0.03%, #ff9233);
+  border-radius: 2px;
+}
+.pl-progress-thumb {
+  position: absolute;
+  width: 8px;
+  height: 12px;
+  background: #fff;
+  border-radius: 25px;
+  transform: translateX(-50%);
+  opacity: 0;
+  transition: opacity 0.15s;
+}
+.pl-progress:hover .pl-progress-thumb { opacity: 1; }
+
+.pl-controls-row {
+  display: flex;
+  align-items: center;
+  height: 32px;
+  gap: 20px;
+}
+.pl-ctrl-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  background: transparent;
+  border: none;
+  color: #fff;
+  cursor: pointer;
+  border-radius: 4px;
+}
+.pl-ctrl-btn:hover { background: rgba(255, 255, 255, 0.12); }
+.pl-ctrl-btn svg { display: block; }
+
+.pl-next-btn { margin: 0; }
+
+.pl-time {
+  font-family: 'PingFang SC', sans-serif;
+  font-size: 18px;
+  line-height: 25px;
+  color: hsla(0, 0%, 100%, 0.6);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  padding: 0 12px;
+}
+
+.pl-spacer { flex: 1; }
+
+/* 文字按钮（清晰度/倍速） */
+.pl-text-btn {
+  width: auto;
+  height: 32px;
+  padding: 0;
+  font-family: 'PingFang SC', sans-serif;
+  font-size: 18px;
+  font-weight: 500;
+  color: hsla(0, 0%, 100%, 0.95);
+}
+
+/* 菜单容器 */
+.pl-menu {
+  position: relative;
+}
+.pl-menu-panel {
+  position: absolute;
+  right: 0;
+  bottom: calc(100% + 8px);
+  min-width: 110px;
+  background: rgba(28, 28, 28, 0.96);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 6px;
+  padding: 4px 0;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5);
+  z-index: 10;
+}
+.pl-menu-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 8px 14px;
+  background: transparent;
+  border: none;
+  color: #fff;
+  font-family: 'PingFang SC', sans-serif;
+  font-size: 14px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.pl-menu-item:hover { background: rgba(255, 255, 255, 0.1); }
+.pl-menu-item-active { color: #fa7705; }
+.pl-menu-check { margin-left: 10px; display: block; flex-shrink: 0; }
+
+/* 音量（悬浮竖直滑块，对齐原版：半透明圆角面板 + 顶部数值 + 5px 橙色轨道 + 12px 白色圆头） */
+.pl-volume {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+.pl-vol-panel {
+  display: none;
+  position: absolute;
+  bottom: calc(100% + 8px);
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(38, 39, 41, 0.85);
+  border-radius: 12px;
+  padding: 20px 24px;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  row-gap: 12px;
+  z-index: 20;
+}
+/* 面板与图标间的隐形桥接区，保证鼠标上移时悬浮不中断 */
+.pl-vol-panel::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -8px;
+  height: 8px;
+}
+.pl-vol-panel-show { display: flex; }
+.pl-vol-value {
+  color: hsla(0, 0%, 100%, 0.95);
+  font-family: 'PingFang SC', sans-serif;
+  font-size: 16px;
+  font-weight: 500;
+  line-height: 22px;
+  min-width: 24px;
+  text-align: center;
+}
+.pl-vol-bar {
+  position: relative;
+  width: 5px;
+  height: 120px;
+  background: hsla(0, 0%, 85%, 0.1);
+  border-radius: 10px;
+  cursor: pointer;
+}
+.pl-vol-fill {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 5px;
+  max-height: 100%;
+  background: #fa7705;
+  border-radius: 10px;
+}
+.pl-vol-thumb {
+  position: absolute;
+  top: -6px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 12px;
+  height: 12px;
+  background: #fff;
+  border-radius: 50%;
+}
+
+/* 控制栏图标尺寸对齐原版：播放/暂停/下一集 32px，音量/全屏 30px（尺寸在 SVG 上显式声明） */
+.pl-controls-row .pl-ctrl-btn svg { display: block; }
+
+/* ===== 右侧信息栏 ===== */
+.pl-right {
+  width: 360px;
+  flex-shrink: 0;
+  height: 100%;
+  background: #121212;
+  box-sizing: border-box;
+  padding: 0 20px;
+}
+.pl-sidebar {
+  width: 100%;
+  height: 100%;
+  box-sizing: border-box;
+  overflow-x: hidden;
+  overflow-y: auto;
+  padding-top: 12px;
+  scrollbar-width: none;
+}
+.pl-sidebar::-webkit-scrollbar { display: none; width: 0; height: 0; }
+
+/* 顶部：封面 + 标题 + 标签 */
+.pl-top {
+  display: flex;
+  align-items: flex-start;
+}
+.pl-cover-box {
+  width: 84px;
+  height: 118px;
+  flex-shrink: 0;
+  margin-right: 16px;
+  border-radius: 8px;
+  overflow: hidden;
+  background: hsla(0, 0%, 100%, 0.06);
+}
+.pl-cover {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.pl-top-right { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.pl-title {
+  color: hsla(0, 0%, 100%, 0.9);
+  font-family: 'PingFang SC', sans-serif;
+  font-size: 20px;
+  font-weight: 500;
+  line-height: 30px;
+  margin-bottom: 14px;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.pl-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  max-height: 24px;
+  overflow: hidden;
+}
+.pl-tag {
+  display: flex;
+  align-items: center;
+  height: 24px;
+  padding: 4px 8px;
+  background: hsla(0, 0%, 88%, 0.06);
+  border-radius: 4px;
+  font-family: 'PingFang SC', sans-serif;
+  font-size: 12px;
+  font-weight: 400;
+  color: hsla(0, 0%, 100%, 0.8);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* 分区 */
+.pl-section {
+  margin-top: 28px;
+}
+.pl-section:first-child { margin-top: 28px; }
+.pl-section-header {
+  color: hsla(0, 0%, 100%, 0.9);
+  font-family: 'PingFang SC', sans-serif;
+  font-size: 18px;
+  font-weight: 500;
+  line-height: 25px;
+}
+
+/* 简介 */
+.pl-desc-box {
+  margin-top: 16px;
+  position: relative;
+}
+.pl-desc {
+  color: hsla(0, 0%, 100%, 0.4);
+  font-family: 'PingFang SC', sans-serif;
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 22px;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+  overflow: hidden;
+}
+.pl-desc-open { -webkit-line-clamp: unset; }
+.pl-desc-toggle {
+  margin-top: 4px;
+  background: transparent;
+  border: none;
+  color: #82a5cd;
+  font-family: 'PingFang SC', sans-serif;
+  font-size: 13px;
+  font-weight: 400;
+  line-height: 22px;
+  cursor: pointer;
+  padding: 0;
+}
+
+/* 演员 */
+.pl-actors {
+  display: flex;
+  flex-wrap: wrap;
+  column-gap: 8px;
+  row-gap: 8px;
+  margin-top: 16px;
+}
+.pl-actor {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 74px;
+}
+.pl-avatar-box {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  overflow: hidden;
+  background: hsla(0, 0%, 100%, 0.06);
+}
+.pl-avatar-btn {
+  padding: 0;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  border-radius: 50%;
+}
+.pl-avatar {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.pl-avatar-empty { display: block; }
+.pl-actor-name {
+  margin-top: 12px;
+  max-width: 72px;
+  color: hsla(0, 0%, 100%, 0.95);
+  font-family: 'PingFang SC', sans-serif;
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 18px;
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.pl-actor-name-link {
+  padding: 0;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  font: inherit;
+  color: hsla(0, 0%, 100%, 0.95);
+  transition: color 0.15s ease-out;
+}
+.pl-actor-name-link:hover {
+  color: #fa7705;
+}
+.pl-actor-role {
+  margin-top: 4px;
+  max-width: 72px;
+  color: hsla(0, 0%, 100%, 0.4);
+  font-family: 'PingFang SC', sans-serif;
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 16px;
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* 选集分段 */
+.pl-segments {
+  margin-top: 4px;
+  position: relative;
+}
+.pl-seg-list {
+  display: flex;
+  align-items: center;
+  column-gap: 28px;
+  height: 46px;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.pl-seg-list::-webkit-scrollbar { display: none; width: 0; height: 0; }
+.pl-seg {
+  padding: 0;
+  background: transparent;
+  border: none;
+  color: #fff;
+  font-family: 'PingFang SC', sans-serif;
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 22px;
+  opacity: 0.4;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: opacity 0.2s ease-out;
+}
+.pl-seg:hover { opacity: 0.95; }
+.pl-seg-active {
+  color: hsla(0, 0%, 100%, 0.9);
+  font-weight: 500;
+  opacity: 1;
+}
+
+/* 选集网格 */
+.pl-episodes {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 12px;
+  margin-top: 4px;
+}
+.pl-episode {
+  position: relative;
+  aspect-ratio: 1 / 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: hsla(0, 0%, 100%, 0.08);
+  border: none;
+  border-radius: 8px;
+  color: #fff;
+  font-family: 'PingFang SC', sans-serif;
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 20px;
+  cursor: pointer;
+  transition: background 0.15s ease-out;
+  overflow: hidden;
+}
+.pl-episode:hover:not(:disabled) {
+  background-color: hsla(0, 0%, 100%, 0.16);
+}
+.pl-episode-active {
+  background-color: rgba(250, 119, 5, 0.1);
+}
+.pl-episode-active:hover {
+  background-color: rgba(250, 119, 5, 0.16);
+}
+.pl-episode-text-active { color: #fa7705; }
+.pl-episode-locked {
+  cursor: not-allowed;
+  opacity: 1;
+}
+/* 锁图标容器：左上角小方块 */
+.pl-lock-wrap {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 22px;
+  height: 16px;
+  background-color: hsla(0, 0%, 100%, 0.07);
+  border-top-left-radius: 8px;
+  border-bottom-right-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.pl-lock {
+  width: 14px;
+  height: 14px;
+}
+/* 正在播放标识：右上角 */
+.pl-playing {
+  position: absolute;
+  right: 6px;
+  top: 6px;
+  width: 8px;
+  height: 8px;
+}
+
+/* 推荐卡片列表（3 列） */
+.pl-card-list {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px 8px;
+  margin-top: 16px;
+}
+.pl-card {
+  display: flex;
+  flex-direction: column;
+  cursor: pointer;
+  min-width: 0;
+}
+.pl-card-cover-box {
+  position: relative;
+  width: 100%;
+  border-radius: 8px;
+  overflow: hidden;
+  background: hsla(0, 0%, 100%, 0.06);
+}
+.pl-card-cover {
+  width: 100%;
+  aspect-ratio: 102 / 142;
+  object-fit: cover;
+  display: block;
+  transition: transform 0.2s ease-out;
+}
+.pl-card:hover .pl-card-cover { transform: scale(1.1); }
+.pl-card-badge {
+  position: absolute;
+  left: 4px;
+  bottom: 4px;
+  padding: 1px 6px;
+  background: rgba(0, 0, 0, 0.6);
+  border-radius: 3px;
+  font-size: 10px;
+  color: #fff;
+}
+.pl-card-title {
+  margin-top: 8px;
+  color: hsla(0, 0%, 100%, 0.9);
+  font-family: 'PingFang SC', sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 20px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.pl-card-tags {
+  display: flex;
+  flex-wrap: wrap;
+  margin-top: 4px;
+  max-height: 22px;
+  overflow: hidden;
+  row-gap: 8px;
+}
+.pl-card-tag {
+  display: flex;
+  align-items: center;
+  height: 22px;
+  padding: 0 4px;
+  margin-right: 6px;
+  background: hsla(0, 0%, 88%, 0.06);
+  border-radius: 6px;
+  font-family: 'PingFang SC', sans-serif;
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 16px;
+  color: hsla(0, 0%, 100%, 0.5);
+  opacity: 0.8;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* 全屏时撑满 */
+.pl-stage:fullscreen {
+  border-radius: 0;
+}
+.pl-stage:fullscreen .pl-video-wrap {
+  height: 100%;
+}
+.pl-stage:fullscreen .pl-video {
+  height: 100%;
+}

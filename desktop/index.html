@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width,initial-scale=1,shrink-to-fit=no,viewport-fit=cover,minimum-scale=1,maximum-scale=1,user-scalable=no"
+    />
+    <meta name="renderer" content="webkit" />
+    <title>红果短剧_免费短剧全集无广告_好看的短剧尽在红果短剧官网</title>
+    <style>
+      /* 启动过渡图：页面加载完成前居中显示大 logo（React 挂载后由 main.jsx 淡出移除） */
+      #hg-splash {
+        position: fixed;
+        inset: 0;
+        z-index: 9999;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: #131414;
+        opacity: 1;
+        transition: opacity 0.3s ease-out;
+      }
+      #hg-splash.hg-splash-hide {
+        opacity: 0;
+        pointer-events: none;
+      }
+      #hg-splash img {
+        width: 320px;
+        height: auto;
+        display: block;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="hg-splash"><img src="/src/assets/logo-title.svg" alt="红果短剧" /></div>
+    <div id="root"></div>
+    <script type="module" src="/src/main.jsx"></script>
+  </body>
+</html>
