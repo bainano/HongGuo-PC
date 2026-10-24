@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import Tip from './Tooltip.jsx';
+import { IS_ELECTRON, IS_MAC } from '../platform.js';
 
 // Segoe Fluent Icons 路径（y 轴已翻转，24 viewBox 内渲染）
 const MAX_D =
@@ -32,16 +33,17 @@ function Icon({ d, t, id }) {
 // 纯浏览器（网页版）下无 Electron preload 桥，窗口控制不可用，整体隐藏
 export default function WindowControls() {
   const [maximized, setMaximized] = useState(false);
-  const isElectron = typeof window !== 'undefined' && !!window.hgWin;
 
   useEffect(() => {
     const c = window.hgWin;
-    if (!c) return;
+    if (!c || !c.onStateChange) return;
     const off = c.onStateChange((state) => setMaximized(state === 'maximized'));
     return () => off && off();
   }, []);
 
-  if (!isElectron) return null;
+  // 纯浏览器（网页版）无 Electron preload 桥 → 隐藏；
+  // macOS 使用系统原生红绿灯 → 同样隐藏，避免与原生按钮重复
+  if (!IS_ELECTRON || IS_MAC) return null;
 
   const act = (fn) => {
     const c = window.hgWin;

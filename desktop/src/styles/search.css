@@ -24,6 +24,19 @@
   margin-top: 0;
 }
 
+/* 换页/重试加载提示条：保留上一页内容期间提示“加载中”，不截断内容 */
+.sr-loading-bar {
+  margin: 0 0 16px;
+  padding: 10px 16px;
+  border-radius: 8px;
+  background: hsla(0, 0%, 100%, 0.06);
+  border: 1px solid hsla(0, 0%, 100%, 0.1);
+  color: hsla(0, 0%, 100%, 0.6);
+  font-family: 'PingFang SC';
+  font-size: 13px;
+  line-height: 18px;
+}
+
 /* 标题命中关键词高亮（对照原站 pc-highlight） */
 .sr-highlight {
   color: #fa7705;

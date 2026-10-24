@@ -7,6 +7,10 @@ import { Resolver } from 'node:dns/promises';
 import http from 'node:http';
 import https from 'node:https';
 import categoryContract from '../shared/category-contract.cjs';
+import { createEngineCrypto } from '../shared/engine-crypto.mjs';
+
+// Electron 内置 Node（BoringSSL）不支持 sm3，用包装器回退到纯 JS 实现。
+const engineCrypto = createEngineCrypto();
 
 // c-ares queries do not occupy the OS getaddrinfo/libuv worker pool. On Windows,
 // an unresolved CDN hostname can otherwise delay even a healthy backup lookup.
@@ -178,7 +182,7 @@ const source = fs.readFileSync(
 );
 const context = vm.createContext({
   require: (name) => {
-    if (name === "node:crypto") return crypto;
+    if (name === "node:crypto") return engineCrypto;
     throw new Error("Unsupported module");
   },
   Buffer,

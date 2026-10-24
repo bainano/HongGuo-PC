@@ -3,6 +3,7 @@ import NavTools from './NavTools.jsx';
 import WindowControls from './WindowControls.jsx';
 import Tip from './Tooltip.jsx';
 import iconPc from '../assets/icon-pc.svg';
+import { macTitleBarDoubleClick } from '../platform.js';
 
 // 独立播放窗口标题栏：复用主窗口标题栏组件（logo + 导航工具 + 窗口控制），
 // 仅保留 logo 展示区与窗口控制区，移除导航链接与搜索框；
@@ -16,7 +17,7 @@ export default function TitleBar({
   onRefresh
 }) {
   return (
-    <div className="pl-titlebar">
+    <div className="pl-titlebar" onDoubleClick={macTitleBarDoubleClick}>
       <Tip label="回到主界面">
         <button
           type="button"

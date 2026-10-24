@@ -31,6 +31,11 @@
   -webkit-app-region: no-drag;
 }
 
+/* ===== macOS 适配：左侧避让系统原生红绿灯（自绘三键在 macOS 下不渲染） ===== */
+html.is-mac .pl-titlebar {
+  padding-left: 84px;
+}
+
 /* ===== 播放页主体（对照静态原版：左播放器 + 右信息栏，占满标题栏下方空间） ===== */
 .pl-page {
   flex: 1;
@@ -94,15 +99,31 @@
   justify-content: center;
   pointer-events: none;
 }
-.pl-spinner {
-  width: 40px;
-  height: 40px;
-  border: 3px solid rgba(255, 255, 255, 0.2);
-  border-top-color: #fff;
-  border-radius: 50%;
-  animation: pl-spin 0.8s linear infinite;
+/* 加载中：黑色圆角矩形容器，内置 logo 旋转动画 */
+.pl-logo-loader {
+  width: 132px;
+  height: 132px;
+  border-radius: 22px;
+  background: #000;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
-@keyframes pl-spin { to { transform: rotate(360deg); } }
+.pl-logo-svg {
+  width: 92px;
+  height: 92px;
+  display: block;
+}
+.pl-logo-loader .pl-spin1,
+.pl-logo-loader .pl-spin2 {
+  transform-box: fill-box;
+  transform-origin: center;
+}
+.pl-logo-loader .pl-spin1 { animation: pl-logo-spin 1.5s linear infinite; }
+.pl-logo-loader .pl-spin2 { animation: pl-logo-spin-rev 2.2s linear infinite; }
+@keyframes pl-logo-spin { to { transform: rotate(360deg); } }
+@keyframes pl-logo-spin-rev { to { transform: rotate(-360deg); } }
 
 /* 错误覆盖 */
 .pl-error-overlay {
@@ -198,6 +219,25 @@
   transition: opacity 0.15s;
 }
 .pl-progress:hover .pl-progress-thumb { opacity: 1; }
+.pl-progress-dragging { cursor: grabbing; }
+
+/* 拖动预览时间提示：跟随预览位置悬浮于进度条上方，仅拖动时可见 */
+.pl-progress-tip {
+  position: absolute;
+  bottom: 20px;
+  transform: translateX(-50%);
+  padding: 3px 7px;
+  background: rgba(0, 0, 0, 0.8);
+  color: #fff;
+  font-size: 12px;
+  line-height: 1;
+  border-radius: 4px;
+  white-space: nowrap;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.12s;
+  z-index: 3;
+}
 
 .pl-controls-row {
   display: flex;

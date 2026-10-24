@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import Navbar from './components/Navbar.jsx';
 import NavTools from './components/NavTools.jsx';
+import ShareLinkModal from './components/ShareLinkModal.jsx';
 import TitleBar from './components/TitleBar.jsx';
 import WindowControls from './components/WindowControls.jsx';
 import SectionRail from './components/SectionRail.jsx';
@@ -397,6 +398,8 @@ function MainApp() {
 
   // 主窗口关闭确认：存在活跃播放窗口时，主进程拦截 close 并转发到此弹窗
   const [closeConfirmOpen, setCloseConfirmOpen] = useState(false);
+  // 「打开分享链接」弹窗：粘贴手机红果 APP 分享链接 → 解析 → 直达剧集/选集
+  const [shareOpen, setShareOpen] = useState(false);
   useEffect(() => {
     const c = window.hgWin;
     if (!c || !c.onConfirmClose) return;
@@ -438,6 +441,7 @@ function MainApp() {
               onBack={goBack}
               onForward={goForward}
               onRefresh={onRefresh}
+              onOpenShare={() => setShareOpen(true)}
             />
           }
         />
@@ -511,6 +515,7 @@ function MainApp() {
           onNavigate={onNavigate}
           onTitleChange={setRankTitle}
           onOpen={(id) => onNavigate('detail', id)}
+          onPlay={onPlay}
         />
       ) : view === 'search' ? (
         <SearchPage
@@ -552,7 +557,11 @@ function MainApp() {
               <button
                 type="button"
                 className="hg-modal-btn"
-                onClick={() => setCloseConfirmOpen(false)}
+                onClick={() => {
+                  setCloseConfirmOpen(false);
+                  const c = window.hgWin;
+                  if (c && c.cancelClose) c.cancelClose();
+                }}
               >
                 取消
               </button>
@@ -570,6 +579,17 @@ function MainApp() {
             </div>
           </div>
         </div>
+      )}
+      {shareOpen && (
+        <ShareLinkModal
+          onClose={() => setShareOpen(false)}
+          onOpen={(seriesId, episodeId) => {
+            setShareOpen(false);
+            // 与其它播放入口一致：桌面端拉起独立播放窗口，网页版回退应用内播放页
+            if (episodeId) onPlay(seriesId, episodeId);
+            else onNavigate('detail', seriesId);
+          }}
+        />
       )}
     </div>
   );

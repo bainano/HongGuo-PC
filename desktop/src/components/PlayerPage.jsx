@@ -1,7 +1,9 @@
 import React, { useEffect, useRef, useState, useCallback } from 'react';
 import { fetchSeries, fetchQualities, streamUrl } from '../api.js';
+import { getCachedVideo, cacheVideo } from '../videoCache.js';
 import Tip from './Tooltip.jsx';
 import playingIcon from '../assets/playing.png';
+import LogoLoader from './LogoLoader.jsx';
 
 // 播放页（对照原站 player 页结构，数据来自本地后端）：
 //   左侧：面包屑 + 视频播放器（自定义控制栏：播放/下一集/进度/时间/清晰度/倍速/音量/全屏）
@@ -11,6 +13,9 @@ import playingIcon from '../assets/playing.png';
 
 const SEGMENT_SIZE = 15;
 const SPEEDS = [0.5, 1, 1.25, 1.5, 2];
+// 加载失败提示的宽限期：加载过程中的瞬时波动（网络抖动/解码重试）会先冒 error
+// 再自行恢复，若立即弹“加载失败”会闪现；这里延迟一段时间，期间恢复则自动取消。
+const ERR_GRACE_MS = 2500;
 
 function fmtTime(sec) {
   if (!Number.isFinite(sec) || sec < 0) return '00:00';
@@ -146,6 +151,10 @@ export default function PlayerPage({ seriesId, episodeId, onOpen, onOpenCharacte
   const [showSpeed, setShowSpeed] = useState(false);
   const [volHover, setVolHover] = useState(false);
   const [volDrag, setVolDrag] = useState(false);
+  const [dragging, setDragging] = useState(false);
+  const [seekPreview, setSeekPreview] = useState(null); // 拖动预览位置（秒）；非 null 表示正在拖动
+  const [hovering, setHovering] = useState(false); // 鼠标是否正悬浮在进度条上（控制提示显隐）
+  const [hoverTime, setHoverTime] = useState(null); // 悬浮预览位置（秒）；移出后保留以便提示淡出时冻结位置、不回跳
   const [controlsVisible, setControlsVisible] = useState(true);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -156,6 +165,10 @@ export default function PlayerPage({ seriesId, episodeId, onOpen, onOpenCharacte
   const volBarRef = useRef(null);
   const hideTimer = useRef(null);
   const draggingRef = useRef(false);
+  // 待显示的“加载失败”提示定时器：宽限期内若恢复则取消
+  const errTimer = useRef(null);
+  // 当前由缓存 Blob 生成的 objectURL（用于切集/卸载时释放，避免内存泄漏）
+  const objectUrlRef = useRef(null);
   // 用户主动暂停标记：区分“用户点了暂停”与“自动播放被策略拦截的暂停”，
   // 保证新源就绪后能自动起播，但用户暂停后不会被意外拉起
   const userPausedRef = useRef(false);
@@ -231,11 +244,68 @@ export default function PlayerPage({ seriesId, episodeId, onOpen, onOpenCharacte
     };
   }, [currentEpId]);
 
-  // 根据清晰度生成视频源
+  // 解析视频源（缓存优先）：命中缓存 → 直接由缓存 Blob 生成 objectURL 快速加载；
+  // 缺失 → 仅一次网络请求拉取并写缓存；任意异常 → 回退为直接网络流。
+  const resolveSource = useCallback(async (epId, q, sid) => {
+    const netUrl = streamUrl(epId, q, sid);
+    try {
+      const cached = await getCachedVideo(epId, q, sid);
+      if (cached) {
+        const blob = await cached.blob();
+        return { url: URL.createObjectURL(blob), isBlob: true };
+      }
+      const resp = await fetch(netUrl);
+      if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+      const size = Number(resp.headers.get('content-length')) || 0;
+      const blob = await resp.blob();
+      // 用真实体积（content-length 缺失时取 blob.size）写缓存
+      cacheVideo(epId, q, sid, resp.clone(), size || blob.size).catch(() => {});
+      return { url: URL.createObjectURL(blob), isBlob: true };
+    } catch {
+      return { url: netUrl, isBlob: false };
+    }
+  }, []);
+
+  // 设置解析出的视频源，并释放上一个 blob objectURL（避免泄漏）
+  const setResolvedSource = useCallback((url, isBlob) => {
+    if (objectUrlRef.current) {
+      URL.revokeObjectURL(objectUrlRef.current);
+      objectUrlRef.current = null;
+    }
+    if (isBlob) objectUrlRef.current = url;
+    setVideoSrc(url);
+  }, []);
+
+  // 根据清晰度生成视频源（异步、缓存优先）
   useEffect(() => {
     if (!currentEpId || !quality) return;
-    setVideoSrc(streamUrl(currentEpId, quality, seriesId));
-  }, [currentEpId, quality, seriesId]);
+    let alive = true;
+    setLoading(true);
+    setPlayError(null);
+    resolveSource(currentEpId, quality, seriesId)
+      .then(({ url, isBlob }) => {
+        if (!alive) {
+          if (isBlob) URL.revokeObjectURL(url);
+          return;
+        }
+        setResolvedSource(url, isBlob);
+      })
+      .catch(() => {});
+    return () => {
+      alive = false;
+    };
+  }, [currentEpId, quality, seriesId, resolveSource, setResolvedSource]);
+
+  // 组件卸载时释放缓存 blob 的 objectURL，避免内存泄漏
+  useEffect(
+    () => () => {
+      if (objectUrlRef.current) {
+        URL.revokeObjectURL(objectUrlRef.current);
+        objectUrlRef.current = null;
+      }
+    },
+    []
+  );
 
   // 视频源变化时重置进度，并恢复自动起播意图
   useEffect(() => {
@@ -265,26 +335,43 @@ export default function PlayerPage({ seriesId, episodeId, onOpen, onOpenCharacte
       } catch (_) {}
     };
     const onWaiting = () => setLoading(true);
-    // 恢复播放/可播放时清除错误浮层：即使出现过瞬时错误，只要能继续播放就不遮挡画面
-    const onPlaying = () => {
+    // 取消“待显示的加载失败提示”并清除定时器
+    const clearPendingError = () => {
+      if (errTimer.current) {
+        clearTimeout(errTimer.current);
+        errTimer.current = null;
+      }
+    };
+    // 恢复播放/可播放/已拿到首帧数据：清除等待态与可能存在的待显示错误，
+    // 只要能继续播放就不弹出失败提示（覆盖加载过程中的瞬时波动）
+    const recover = () => {
+      clearPendingError();
       setLoading(false);
       setPlayError(null);
     };
+    const onPlaying = recover;
     const onCanPlay = () => {
-      setLoading(false);
-      setPlayError(null);
+      recover();
       // 自动起播：新源就绪后若仍暂停且非用户主动暂停，直接拉起播放
       //（配合 Electron autoplay-policy=no-user-gesture-required 开关，
       //  播放窗口打开/换集后无需手动点击）
       if (v.paused && !userPausedRef.current) v.play().catch(() => {});
     };
+    const onLoadedData = recover;
     const onErr = () => {
       const err = v.error;
       // 忽略 MEDIA_ERR_ABORTED(code=1)：切换剧集/清晰度或重复 load() 会中止在途请求，
       // 属于正常流程，新源仍在继续加载，不应提示"加载失败"
       if (!err || err.code === 1) return;
-      setLoading(false);
-      setPlayError('视频加载失败，请切换清晰度或重试');
+      // 兜底：瞬时波动（网络抖动/解码重试）会先冒 error 再自行恢复，
+      // 不立即弹失败提示，而是延迟 ERR_GRACE_MS；宽限期内恢复则自动取消。
+      clearPendingError();
+      errTimer.current = setTimeout(() => {
+        errTimer.current = null;
+        // 延迟到期仍未恢复（仍在等待/出错）才真正展示失败提示
+        setLoading(false);
+        setPlayError('视频加载失败，请切换清晰度或重试');
+      }, ERR_GRACE_MS);
     };
     const onVol = () => {
       setVolume(v.volume);
@@ -303,10 +390,12 @@ export default function PlayerPage({ seriesId, episodeId, onOpen, onOpenCharacte
     v.addEventListener('waiting', onWaiting);
     v.addEventListener('playing', onPlaying);
     v.addEventListener('canplay', onCanPlay);
+    v.addEventListener('loadeddata', onLoadedData);
     v.addEventListener('error', onErr);
     v.addEventListener('volumechange', onVol);
     v.addEventListener('ended', onEnded);
     return () => {
+      clearPendingError();
       v.removeEventListener('play', onPlay);
       v.removeEventListener('pause', onPause);
       v.removeEventListener('timeupdate', onTime);
@@ -316,6 +405,7 @@ export default function PlayerPage({ seriesId, episodeId, onOpen, onOpenCharacte
       v.removeEventListener('waiting', onWaiting);
       v.removeEventListener('playing', onPlaying);
       v.removeEventListener('canplay', onCanPlay);
+      v.removeEventListener('loadeddata', onLoadedData);
       v.removeEventListener('error', onErr);
       v.removeEventListener('volumechange', onVol);
       v.removeEventListener('ended', onEnded);
@@ -340,9 +430,9 @@ export default function PlayerPage({ seriesId, episodeId, onOpen, onOpenCharacte
     setControlsVisible(true);
     if (hideTimer.current) clearTimeout(hideTimer.current);
     hideTimer.current = setTimeout(() => {
-      if (playing && !showQuality && !showSpeed && !volHover && !volDrag) setControlsVisible(false);
+      if (playing && !showQuality && !showSpeed && !volHover && !volDrag && !dragging) setControlsVisible(false);
     }, 2800);
-  }, [playing, showQuality, showSpeed, volHover, volDrag]);
+  }, [playing, showQuality, showSpeed, volHover, volDrag, dragging]);
 
   useEffect(() => {
     showControls();
@@ -374,27 +464,55 @@ export default function PlayerPage({ seriesId, episodeId, onOpen, onOpenCharacte
     setCurrentEpId(ep.id);
   };
 
-  // 进度条拖动
+  // 进度条交互：点击直接跳转；拖动过程中只更新预览位置、屏蔽跳转，
+  // 待用户松开（释放拖动）后才执行进度跳转
   const onProgressMouseDown = (e) => {
     const v = videoRef.current;
     if (!v || !duration) return;
-    draggingRef.current = true;
-    const seek = (clientX) => {
-      const bar = e.currentTarget;
+    e.preventDefault();
+    const bar = e.currentTarget;
+    const pctFromClientX = (clientX) => {
       const rect = bar.getBoundingClientRect();
-      const pct = Math.max(0, Math.min(1, (clientX - rect.left) / rect.width));
-      v.currentTime = pct * duration;
+      return Math.max(0, Math.min(1, (clientX - rect.left) / rect.width));
     };
-    seek(e.clientX);
-    const onMove = (ev) => draggingRef.current && seek(ev.clientX);
-    const onUp = () => {
+    // 进入拖动：屏蔽跳转，仅记录预览位置
+    draggingRef.current = true;
+    setDragging(true);
+    setSeekPreview(pctFromClientX(e.clientX) * duration);
+    const onMove = (ev) => {
+      if (!draggingRef.current) return;
+      // 拖动中：只更新预览，绝不设置 v.currentTime
+      setSeekPreview(pctFromClientX(ev.clientX) * duration);
+    };
+    const onUp = (ev) => {
       draggingRef.current = false;
+      setDragging(false);
+      // 释放后：执行一次跳转
+      const target = pctFromClientX(ev.clientX) * duration;
+      setSeekPreview(null);
+      if (v) {
+        v.currentTime = target;
+        // 同步 React 进度，避免 timeupdate 到来前进度条回跳闪烁
+        setCurrentTime(target);
+      }
       document.removeEventListener('mousemove', onMove);
       document.removeEventListener('mouseup', onUp);
     };
     document.addEventListener('mousemove', onMove);
     document.addEventListener('mouseup', onUp);
   };
+
+  // 鼠标悬浮进度条：仅预览对应位置时间（不改变进度），方便查看后点击跳转
+  const onProgressHover = (e) => {
+    if (draggingRef.current || !duration) return;
+    const bar = e.currentTarget;
+    const rect = bar.getBoundingClientRect();
+    const pct = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
+    setHovering(true);
+    setHoverTime(pct * duration);
+  };
+  // 移出：仅隐藏提示，保留 hoverTime 使淡出时位置冻结，不回跳到进度条头部
+  const onProgressLeave = () => setHovering(false);
 
   // 竖直音量条：按 Y 坐标计算音量（底部=0，顶部=1），支持点击与拖动
   const setVolumeFromClientY = (clientY) => {
@@ -440,12 +558,32 @@ export default function PlayerPage({ seriesId, episodeId, onOpen, onOpenCharacte
 
   // 键盘快捷键
   useEffect(() => {
+    const isEditable = (el) =>
+      !!el &&
+      (el.tagName === 'INPUT' ||
+        el.tagName === 'TEXTAREA' ||
+        el.isContentEditable);
+
     const onKey = (e) => {
-      if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+      if (isEditable(e.target)) return;
       const v = videoRef.current;
+      // 空格：优先拦截，且必须在“视频未就绪”的早退之前。
+      // 若焦点残留在某个按钮上（刚点过的播放键/选集卡片等），浏览器默认会在
+      // keyup 阶段触发该按钮的 click，并给它加 :focus-visible 高亮——
+      // 表现为“按空格反而选中了一个按钮”。这里统一 preventDefault，
+      // 把焦点归还 body，再执行播放/暂停。
+      if (e.key === ' ' || e.code === 'Space') {
+        e.preventDefault();
+        const ae = document.activeElement;
+        if (ae && ae !== document.body && typeof ae.blur === 'function') {
+          ae.blur();
+        }
+        if (v) togglePlay();
+        showControls();
+        return;
+      }
       if (!v) return;
       switch (e.key) {
-        case ' ':
         case 'k':
           e.preventDefault();
           togglePlay();
@@ -475,8 +613,18 @@ export default function PlayerPage({ seriesId, episodeId, onOpen, onOpenCharacte
       }
       showControls();
     };
+    // keyup 兜底：Space 对聚焦按钮的激活发生在 keyup 阶段，这里再拦一次
+    const onKeyUp = (e) => {
+      if ((e.key === ' ' || e.code === 'Space') && !isEditable(e.target)) {
+        e.preventDefault();
+      }
+    };
     window.addEventListener('keydown', onKey);
-    return () => window.removeEventListener('keydown', onKey);
+    window.addEventListener('keyup', onKeyUp);
+    return () => {
+      window.removeEventListener('keydown', onKey);
+      window.removeEventListener('keyup', onKeyUp);
+    };
   }, [duration, togglePlay, showControls]);
 
   if (error) {
@@ -512,7 +660,7 @@ export default function PlayerPage({ seriesId, episodeId, onOpen, onOpenCharacte
             <div className="pl-left">
               <div className="pl-stage">
                 <div className="pl-loading">
-                  <div className="pl-spinner" />
+                  <LogoLoader />
                 </div>
               </div>
             </div>
@@ -533,8 +681,14 @@ export default function PlayerPage({ seriesId, episodeId, onOpen, onOpenCharacte
     .map((t) => t.trim())
     .filter(Boolean);
 
-  const progressPct = duration ? (currentTime / duration) * 100 : 0;
+  // 拖动时使用预览位置，避免进度条随 currentTime 抖动；释放后回到真实进度
+  const displayTime = dragging && seekPreview != null ? seekPreview : currentTime;
+  const progressPct = duration ? (displayTime / duration) * 100 : 0;
   const bufferedPct = duration ? (buffered / duration) * 100 : 0;
+  // 悬浮/拖动提示：悬浮时显示光标位置时间（不改变进度），拖动时显示预览位置时间
+  const tipTime = dragging ? displayTime : hoverTime != null ? hoverTime : displayTime;
+  const tipPct = duration ? (tipTime / duration) * 100 : 0;
+  const showTip = dragging || hovering;
 
   return (
     <main className="pl-page">
@@ -554,7 +708,7 @@ export default function PlayerPage({ seriesId, episodeId, onOpen, onOpenCharacte
                 />
                 {loading && !playError && (
                   <div className="pl-loading">
-                    <div className="pl-spinner" />
+                    <LogoLoader />
                   </div>
                 )}
                 {playError && (
@@ -565,6 +719,14 @@ export default function PlayerPage({ seriesId, episodeId, onOpen, onOpenCharacte
                       className="pl-retry-btn"
                       onClick={(e) => {
                         e.stopPropagation();
+                        // 重试：立即清除待显示/已显示的失败提示并恢复加载态，
+                        // 避免旧定时器随后又弹出失败浮层
+                        if (errTimer.current) {
+                          clearTimeout(errTimer.current);
+                          errTimer.current = null;
+                        }
+                        setPlayError(null);
+                        setLoading(true);
                         if (videoRef.current) videoRef.current.load();
                       }}
                     >
@@ -585,15 +747,30 @@ export default function PlayerPage({ seriesId, episodeId, onOpen, onOpenCharacte
                 >
                   {/* 进度条 */}
                   <div
-                    className="pl-progress"
+                    className={'pl-progress' + (dragging ? ' pl-progress-dragging' : '')}
                     onMouseDown={onProgressMouseDown}
+                    onMouseMove={onProgressHover}
+                    onMouseLeave={onProgressLeave}
                     role="slider"
                     aria-label="播放进度"
+                    aria-valuemin={0}
+                    aria-valuemax={Math.round(duration) || 0}
+                    aria-valuenow={Math.round(displayTime) || 0}
                   >
                     <div className="pl-progress-bg" />
                     <div className="pl-progress-buffered" style={{ width: `${bufferedPct}%` }} />
                     <div className="pl-progress-played" style={{ width: `${progressPct}%` }} />
-                    <div className="pl-progress-thumb" style={{ left: `${progressPct}%` }} />
+                    <div
+                      className="pl-progress-thumb"
+                      style={{ left: `${progressPct}%`, opacity: showTip ? 1 : undefined }}
+                    />
+                    {/* 悬浮/拖动预览时间提示：跟随光标或拖动位置 */}
+                    <div
+                      className="pl-progress-tip"
+                      style={{ left: `${tipPct}%`, opacity: showTip ? 1 : 0 }}
+                    >
+                      {fmtTime(tipTime)}
+                    </div>
                   </div>
 
                   <div className="pl-controls-row">
@@ -608,7 +785,7 @@ export default function PlayerPage({ seriesId, episodeId, onOpen, onOpenCharacte
                     </Tip>
 
                     <span className="pl-time">
-                      {fmtTime(currentTime)} / {fmtTime(duration)}
+                      {fmtTime(displayTime)} / {fmtTime(duration)}
                     </span>
 
                     <div className="pl-spacer" />

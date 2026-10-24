@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import logoTitle from '../assets/logo-title.svg';
 import { fetchSuggestions } from '../api.js';
 import Tip from './Tooltip.jsx';
+import { macTitleBarDoubleClick } from '../platform.js';
 
 // 顶部导航：品牌 + 导航工具（后退/前进/刷新）+ 首页/分类/榜单（含下拉）+ 搜索框
 // activeNav: 'home' | 'category' | 'rank' —— 当前高亮的导航项
@@ -183,7 +184,8 @@ export default function Navbar({
   const showSuggestions = suggestOpen && suggestions.length > 0 && inputValue.trim();
 
   return (
-    <header className="pc-container-header">
+    // macOS：隐藏标题栏后双击空白切换最大化
+    <header className="pc-container-header" onDoubleClick={macTitleBarDoubleClick}>
       <Tip label="回到首页">
         <a
           className="pc-brand-link"

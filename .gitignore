@@ -1,7 +1,51 @@
+# ===== Dependencies =====
 node_modules/
+.pnp/
+.pnp.js
+
+# ===== Build output (kept out of git; produced by `vite build` / electron-builder) =====
 dist/
+out/
+release/
 *.log
-.screenshots/
-__pycache__/
+npm-debug.log*
+
+# ===== Packaged artifacts =====
+desktop/dist-electron/
 *.exe
+*.dmg
 *.zip
+*.blockmap
+latest.yml
+latest-mac.yml
+latest-linux.yml
+
+# ===== Backend runtime data & databases (created at runtime) =====
+*.sqlite
+*.sqlite-shm
+*.sqlite-wal
+service-address.json
+backend/custom-server/data/
+
+# ===== Secrets / env =====
+.env
+.env.*
+*.pem
+*.key
+
+# ===== OS / editor =====
+.DS_Store
+Thumbs.db
+desktop.ini
+.vscode/*
+!.vscode/extensions.json
+.idea/
+*.swp
+
+# ===== Reference / scraped material (not part of the shippable app) =====
+bangdan/
+detail/
+*_files/
+
+# Legacy probe scripts inside the desktop app (reference only)
+desktop/legacy/

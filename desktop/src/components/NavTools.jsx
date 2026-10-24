@@ -7,7 +7,8 @@ export default function NavTools({
   canGoForward = false,
   onBack,
   onForward,
-  onRefresh
+  onRefresh,
+  onOpenShare
 }) {
   return (
     <div className="nv-tools" role="group" aria-label="页面导航">
@@ -55,6 +56,26 @@ export default function NavTools({
           </svg>
         </button>
       </Tip>
+      {onOpenShare && (
+        <Tip label="打开分享链接">
+          <button
+            type="button"
+            className="nv-tool-btn"
+            onClick={onOpenShare}
+            aria-label="打开分享链接"
+          >
+            <svg viewBox="0 0 16 16" fill="none" aria-hidden="true">
+              <path
+                d="M6.5 9.5 9.5 6.5M7 4.2l.6-.6a2.8 2.8 0 0 1 3.96 3.96l-.6.6M9 11.8l-.6.6A2.8 2.8 0 0 1 4.44 8.44l.6-.6"
+                stroke="currentColor"
+                strokeWidth="1.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
+          </button>
+        </Tip>
+      )}
     </div>
   );
 }

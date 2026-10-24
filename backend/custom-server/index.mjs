@@ -12,6 +12,7 @@ import { HistoryStore } from "./history-store.mjs";
 import { createHistoryHandler } from "./history-routes.mjs";
 import { provider as coreProvider, createPrefetchQueue, sharedResource, upstreamRequestSignal, mediaLookup, contentTransport } from "../server/provider.mjs";
 import { readJson } from "../shared/http-json.mjs";
+import { createEngineCrypto } from "../shared/engine-crypto.mjs";
 import { LibraryStore } from "../shared/library-store.mjs";
 import { LibrarySync } from "./library-sync.mjs";
 import { createLibraryHandler } from "./library-routes.mjs";
@@ -90,6 +91,9 @@ librarySync.start();
 
 // 初始化官方视频解密与画质引擎
 let hgEngine = null;
+// Electron 内置 Node（BoringSSL）不支持 sm3，用包装器回退到纯 JS 实现，
+// 否则打包版里官方接口签名直接抛错，播放页清晰度接口返回 502。
+const engineCrypto = createEngineCrypto();
 try {
   const sharedEngine = new URL("../shared/content-core/hongguo.js", import.meta.url);
   const cjsPath = fs.existsSync(sharedEngine) ? sharedEngine : new URL("./vendor/hongguo.cjs", import.meta.url);
@@ -97,7 +101,7 @@ try {
     const source = fs.readFileSync(cjsPath, "utf8");
     const context = vm.createContext({
       require: (name) => {
-        if (name === "node:crypto") return crypto;
+        if (name === "node:crypto") return engineCrypto;
         throw new Error("Unsupported module: " + name);
       },
       Buffer,
@@ -801,6 +805,45 @@ const server = http.createServer(async (req, res) => {
         return json(res, payload, 200, { "X-Cache": "MISS" }, reqStart);
       } catch (error) {
         return json(res, { error: error.message || "搜索建议获取失败" }, 502, {}, reqStart);
+      }
+    }
+
+    // 7.2 红果分享短链解析 (GET /api/resolve-share?url=...)
+    // 短链（novelquickapp.com/s/{code}）不含 video_id，跟随重定向到完整分享页后解析 video_id/vid
+    if (pathname === "/api/resolve-share") {
+      const target = (u.searchParams.get("url") || "").trim();
+      if (!/^https?:\/\//i.test(target)) return json(res, { error: "invalid url" }, 400, {}, reqStart);
+      const cacheKey = `hot:resolve:${target}`;
+      const cached = hotLruCache.get(cacheKey);
+      if (cached) return json(res, cached, 200, { "X-Cache": "HIT" }, reqStart);
+      try {
+        const resp = await axios.get(target, {
+          maxRedirects: 5,
+          timeout: 10000,
+          headers: {
+            "User-Agent":
+              "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+          },
+        });
+        const finalUrl =
+          (resp.request && resp.request.res && resp.request.res.responseUrl) ||
+          (resp.config && resp.config.url) ||
+          target;
+        const body = typeof resp.data === "string" ? resp.data : "";
+        const pick = (key) => {
+          const m =
+            finalUrl.match(new RegExp(`[?&]${key}=(\\d{6,30})`, "i")) ||
+            body.match(new RegExp(`(?:${key})[=:](\\d{6,30})`, "i"));
+          return m ? m[1] : null;
+        };
+        const seriesId = pick("video_id") || pick("series_id") || pick("album_id");
+        const episodeId = pick("vid") || pick("share_toast_vid") || pick("episode_id");
+        if (!seriesId) return json(res, { error: "无法从分享链接解析出剧集 ID" }, 422, {}, reqStart);
+        const payload = { url: finalUrl, seriesId, episodeId };
+        hotLruCache.set(cacheKey, payload, 600000);
+        return json(res, payload, 200, { "X-Cache": "MISS" }, reqStart);
+      } catch (err) {
+        return json(res, { error: err.message || "解析失败" }, 502, {}, reqStart);
       }
     }
 

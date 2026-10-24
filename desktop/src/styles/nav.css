@@ -45,6 +45,14 @@
   z-index: 1;
 }
 
+/* ===== macOS 适配 =====
+   窗口使用系统原生红绿灯（左上，见 main.js trafficLightPosition），自绘三键已隐藏，
+   因此右侧无需预留按钮区，左侧改为避让红绿灯：整体左移 84px。 */
+html.is-mac .pc-page .pc-container-header {
+  margin-left: 84px;
+  margin-right: 16px;
+}
+
 .pc-page .pc-brand-link {
   display: flex;
   height: 32px;

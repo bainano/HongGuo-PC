@@ -1,0 +1,114 @@
+name: Build & Release
+
+# 触发：
+# - 推送到 main/master：只构建并上传产物（不发布）
+# - 推送 tag（v*）：构建 + 自动发布 GitHub Release（含全部安装包）
+# - 手动 workflow_dispatch：随时可在 Actions 页面手动构建
+on:
+  push:
+    branches: [main, master]
+    tags: ['v*']
+  workflow_dispatch:
+
+# 同一 ref 的多次构建自动取消，避免重复占用 runner
+concurrency:
+  group: build-${{ github.ref }}
+  cancel-in-progress: true
+
+# 允许工作流创建 Release 并上传安装包
+permissions:
+  contents: write
+
+jobs:
+  build:
+    name: ${{ matrix.name }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: windows-latest
+            name: Windows x64 (安装器)
+            script: pack:win
+            artifact: HongGuo-PC-Windows-x64
+            glob: 'desktop/dist-electron/*.exe'
+          # Intel 包用 macos-13（原生 x64 runner）。
+          # 若该 runner 下线，可把 os 改为 macos-14：electron-builder 支持在 Apple Silicon 上
+          # 交叉构建 x64 dmg（未签名场景无需额外配置）。
+          - os: macos-13
+            name: macOS Intel x64 (DMG)
+            script: pack:mac:x64
+            artifact: HongGuo-PC-macOS-x64
+            glob: 'desktop/dist-electron/*.dmg'
+          - os: macos-14
+            name: macOS Apple Silicon arm64 (DMG)
+            script: pack:mac:arm64
+            artifact: HongGuo-PC-macOS-arm64
+            glob: 'desktop/dist-electron/*.dmg'
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: |
+            desktop/package-lock.json
+            backend/package-lock.json
+
+      # 后端依赖会被一并打进安装包（extraResources），必须先安装
+      - name: Install backend deps
+        working-directory: backend
+        run: npm install --no-audit --no-fund
+
+      - name: Install desktop deps
+        working-directory: desktop
+        run: npm install --no-audit --no-fund
+
+      # 各平台脚本内部已包含 vite build（保证 app.asar 内含 dist/index.html）
+      - name: Build & package (${{ matrix.name }})
+        working-directory: desktop
+        run: npm run ${{ matrix.script }}
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.artifact }}
+          path: ${{ matrix.glob }}
+          if-no-files-found: error
+
+  release:
+    name: Publish GitHub Release
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Download artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+
+      - name: Collect release files
+        run: |
+          mkdir -p release-files
+          find artifacts -type f \( -name '*.exe' -o -name '*.dmg' -o -name '*.blockmap' \) -exec cp {} release-files/ \;
+          ls -lh release-files
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: release-files/*
+          body_path: RELEASE_NOTES.md
+          draft: false
+          prerelease: false
+          fail_on_unmatched_files: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

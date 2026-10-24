@@ -59,16 +59,37 @@ export function resolveApiBase() {
       API_BASE = hit.base;
       if (typeof localStorage !== 'undefined') localStorage.setItem(STORE_KEY, hit.base);
       return hit.base;
-    })();
+    })().catch((e) => {
+      // 探测失败【不】缓存拒绝态，下一次调用可重新探测；
+      // 否则首探失败时 readyPromise 永久为 rejected，导致后续所有请求
+      // 都必须“刷新一次页面”才能恢复（表现为部分页码加载失败）。
+      readyPromise = null;
+      throw e;
+    });
   }
   return readyPromise;
 }
 
-async function getJSON(path) {
-  await resolveApiBase();
-  const res = await fetch(API_BASE + path);
-  if (!res.ok) throw new Error(`HTTP ${res.status} ${path}`);
-  return res.json();
+// 带兜底重试的请求：瞬时网络抖动 / 后端偶发未就绪时自动重试，
+// 每次重试都会重新探测可用服务地址，最大程度提升加载成功率。
+async function getJSON(path, { retries = 2, baseDelay = 350 } = {}) {
+  let lastErr;
+  for (let attempt = 0; attempt <= retries; attempt++) {
+    try {
+      await resolveApiBase();
+      const res = await fetch(API_BASE + path);
+      if (!res.ok) throw new Error(`HTTP ${res.status} ${path}`);
+      return await res.json();
+    } catch (e) {
+      lastErr = e;
+      if (attempt < retries) {
+        // 退避重试：350ms → 700ms，给后端/接口恢复时间
+        await new Promise((r) => setTimeout(r, baseDelay * (attempt + 1)));
+        continue;
+      }
+    }
+  }
+  throw lastErr;
 }
 
 // 首页四栏：官方首页推荐四大专区（与官网首页内容一致）

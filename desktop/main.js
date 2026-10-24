@@ -2,6 +2,8 @@
 // 加载逻辑：VITE_DEV_SERVER_URL 存在时加载 Vite dev server；否则加载 dist 构建产物
 const { app, BrowserWindow, ipcMain, shell } = require('electron');
 const path = require('path');
+const fs = require('fs');
+const { spawn } = require('child_process');
 
 // 注意：不要禁用硬件加速。官方视频流为 HEVC (bytevc1)，Chromium 在 Windows 上依赖
 // GPU/平台硬解 HEVC；禁用硬件加速会导致播放黑屏、只有声音没有画面、偶发播放失败。
@@ -12,6 +14,43 @@ app.commandLine.appendSwitch('autoplay-policy', 'no-user-gesture-required');
 let win = null;          // 主窗口
 let playerWin = null;    // 独立播放窗口
 let allowMainClose = false; // 关闭确认弹窗“确认关闭”后置位，跳过 close 拦截
+let closeAllPending = false;     // 关闭确认流程进行中：两窗口都暂存，待确认后统一关闭
+let mainCloseReceived = false;   // 本次关闭流程中主窗口是否已收到 close（区分「一键关闭全部」与「单独关播放窗」）
+let playerAloneClosing = false;  // 单独关闭播放窗口（非一键全部）的放行标记
+let backendChild = null;  // 打包模式下随应用拉起的后端子进程
+
+const isMac = process.platform === 'darwin';
+
+// 窗口基础配置（主窗口 / 播放窗口共用）：
+// - Windows / Linux：无边框（frame: false）+ 自绘右上三键窗口控制
+// - macOS：保留系统窗口框架但隐藏标题栏（titleBarStyle: 'hidden'），
+//   左上由系统提供「红绿灯」按钮与原生双击最大化；自绘三键在渲染层隐藏
+//   （见 src/components/WindowControls.jsx），标题栏左侧留出避让区（nav.css / player.css）。
+//   自绘三键无法还原 macOS 红绿灯的原生交互（悬浮展开图标、全屏并入等），故直接复用原生。
+function baseWindowOptions({ width, height, minWidth, minHeight, backgroundColor }) {
+  const opts = {
+    width,
+    height,
+    minWidth,
+    minHeight,
+    show: false,
+    backgroundColor,
+    webPreferences: {
+      preload: path.join(__dirname, 'preload.js'),
+      contextIsolation: true,
+      nodeIntegration: false,
+      sandbox: false
+    }
+  };
+  if (isMac) {
+    opts.titleBarStyle = 'hidden';
+    opts.trafficLightPosition = { x: 14, y: 18 };
+  } else {
+    opts.frame = false;
+    opts.icon = path.join(__dirname, 'icon.ico');
+  }
+  return opts;
+}
 
 function loadApp(target, query) {
   const devUrl = process.env.VITE_DEV_SERVER_URL;
@@ -48,22 +87,15 @@ function senderWin(event) {
 }
 
 function createWindow() {
-  win = new BrowserWindow({
-    width: 1440,
-    height: 900,
-    minWidth: 960,
-    minHeight: 600,
-    frame: false,
-    show: false,
-    backgroundColor: '#131414',
-    icon: path.join(__dirname, 'icon.ico'),
-    webPreferences: {
-      preload: path.join(__dirname, 'preload.js'),
-      contextIsolation: true,
-      nodeIntegration: false,
-      sandbox: false
-    }
-  });
+  win = new BrowserWindow(
+    baseWindowOptions({
+      width: 1440,
+      height: 900,
+      minWidth: 960,
+      minHeight: 600,
+      backgroundColor: '#131414'
+    })
+  );
 
   // 直接加载应用页面
   loadApp(win);
@@ -99,7 +131,12 @@ function createWindow() {
     if (allowMainClose) return;
     if (playerWin && !playerWin.isDestroyed()) {
       e.preventDefault();
-      win.webContents.send('win:confirm-close');
+      mainCloseReceived = true;
+      if (!closeAllPending) {
+        closeAllPending = true;
+        raiseMainForConfirm();
+        win.webContents.send('win:confirm-close');
+      }
     }
   });
 
@@ -121,22 +158,15 @@ function createPlayerWindow(seriesId, episodeId) {
     return;
   }
 
-  playerWin = new BrowserWindow({
-    width: 1600,
-    height: 940,
-    minWidth: 1200,
-    minHeight: 700,
-    frame: false,
-    show: false,
-    backgroundColor: '#121212',
-    icon: path.join(__dirname, 'icon.ico'),
-    webPreferences: {
-      preload: path.join(__dirname, 'preload.js'),
-      contextIsolation: true,
-      nodeIntegration: false,
-      sandbox: false
-    }
-  });
+  playerWin = new BrowserWindow(
+    baseWindowOptions({
+      width: 1600,
+      height: 940,
+      minWidth: 1200,
+      minHeight: 700,
+      backgroundColor: '#121212'
+    })
+  );
 
   // 直接加载播放页
   loadApp(playerWin, {
@@ -170,6 +200,34 @@ function createPlayerWindow(seriesId, episodeId) {
     return { action: 'deny' };
   });
 
+  // 关闭拦截：配合「任务栏一键关闭全部窗口」。
+  // 单独关闭播放窗口时，200ms 内若主窗口未收到 close，判定为单独关闭，正常放行；
+  // 若主窗口也收到 close（一键关闭全部），则聚焦主窗口并弹确认，两窗口均暂存，确认后统一关闭。
+  playerWin.on('close', (e) => {
+    if (allowMainClose || playerAloneClosing) return;
+    if (closeAllPending) {
+      e.preventDefault();
+      return;
+    }
+    if (win && !win.isDestroyed()) {
+      e.preventDefault();
+      raiseMainForConfirm();
+      setTimeout(() => {
+        if (mainCloseReceived) {
+          // 主窗口也进入关闭流程 → 一键关闭全部：聚焦主窗口并弹确认
+          if (!closeAllPending) {
+            closeAllPending = true;
+            win.webContents.send('win:confirm-close');
+          }
+        } else {
+          // 仅关闭播放窗口：放行
+          playerAloneClosing = true;
+          playerWin.close();
+        }
+      }, 200);
+    }
+  });
+
   playerWin.on('closed', () => {
     playerWin = null;
   });
@@ -199,9 +257,25 @@ ipcMain.on('player:open', (_event, seriesId, episodeId) => {
 // 关闭确认弹窗“确认关闭”：联动关闭主窗口与播放窗口
 ipcMain.on('win:close-confirmed', () => {
   allowMainClose = true;
+  closeAllPending = false;
+  mainCloseReceived = false;
+  playerAloneClosing = false;
+  try {
+    if (win && !win.isDestroyed()) win.setAlwaysOnTop(false);
+  } catch (_) {}
   if (playerWin && !playerWin.isDestroyed()) playerWin.close();
   if (win && !win.isDestroyed()) win.close();
   allowMainClose = false;
+});
+
+// 关闭确认弹窗“取消”：放弃本次关闭，复位协调状态，后续关闭恢复正常
+ipcMain.on('win:close-cancel', () => {
+  closeAllPending = false;
+  mainCloseReceived = false;
+  playerAloneClosing = false;
+  try {
+    if (win && !win.isDestroyed()) win.setAlwaysOnTop(false);
+  } catch (_) {}
 });
 
 // 聚焦主窗口：隐藏/最小化则还原显示；已关闭则兜底重建，保证“回到主界面”可靠可用
@@ -213,6 +287,14 @@ function focusMainWindow() {
   if (win.isMinimized()) win.restore();
   win.show();
   win.focus();
+}
+
+// 「关闭全部窗口」场景下播放窗口仍开着，临时置顶主窗口以确保确认弹窗可见，待确认/取消后还原
+function raiseMainForConfirm() {
+  focusMainWindow();
+  try {
+    if (win && !win.isDestroyed()) win.setAlwaysOnTop(true);
+  } catch (_) {}
 }
 
 // 播放窗口 logo 点击：最小化播放窗口并聚焦主窗口
@@ -237,11 +319,51 @@ ipcMain.on('player:open-character', (_event, id) => {
   win.webContents.send('app:open-character', String(id));
 });
 
+// 打包模式下，随应用拉起内置后端（custom-server），使安装包开箱即用。
+// 以 ELECTRON_RUN_AS_NODE 复用 Electron 自带的 Node 运行后端入口，无需额外分发 Node。
+// dev 模式下后端由开发者单独启动（见 README），此处跳过。
+function startBackend() {
+  if (!app.isPackaged) return;
+  try {
+    const backendEntry = path.join(process.resourcesPath, 'backend', 'custom-server', 'index.mjs');
+    const dataDir = path.join(app.getPath('userData'), 'backend-data');
+    fs.mkdirSync(dataDir, { recursive: true });
+    backendChild = spawn(process.execPath, [backendEntry], {
+      cwd: dataDir,
+      env: {
+        ...process.env,
+        ELECTRON_RUN_AS_NODE: '1',
+        HG_DATA_DIR: dataDir
+      },
+      stdio: 'ignore'
+    });
+    backendChild.on('error', (e) => console.error('[backend] spawn error:', e));
+    backendChild.on('exit', (code) => console.log('[backend] exited with', code));
+    console.log('[backend] started:', backendEntry);
+  } catch (e) {
+    console.error('[backend] failed to start:', e);
+  }
+}
+
+function stopBackend() {
+  if (backendChild && !backendChild.killed) {
+    try {
+      backendChild.kill('SIGTERM');
+    } catch (_) {}
+    backendChild = null;
+  }
+}
+
 app.whenReady().then(() => {
+  startBackend();
   createWindow();
   app.on('activate', () => {
     if (BrowserWindow.getAllWindows().length === 0) createWindow();
   });
+});
+
+app.on('before-quit', () => {
+  stopBackend();
 });
 
 app.on('window-all-closed', () => app.quit());

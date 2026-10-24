@@ -270,3 +270,69 @@ p {
 .hg-modal-btn-primary:hover {
   background: #ff8526;
 }
+
+/* ===== 打开分享链接弹窗 ===== */
+.hg-share-modal {
+  border: 1px solid hsla(0, 0%, 100%, 0.12);
+}
+
+.hg-share-input {
+  width: 100%;
+  margin-top: 16px;
+  padding: 10px 12px;
+  border: 1px solid hsla(0, 0%, 100%, 0.16);
+  border-radius: 8px;
+  background: rgba(0, 0, 0, 0.28);
+  color: hsla(0, 0%, 100%, 0.92);
+  font-size: 13px;
+  line-height: 20px;
+  font-family: inherit;
+  outline: none;
+  transition: border-color 0.16s ease, box-shadow 0.16s ease;
+}
+
+.hg-share-input::placeholder {
+  color: hsla(0, 0%, 100%, 0.4);
+}
+
+.hg-share-input:focus {
+  border-color: #fa7705;
+  box-shadow: 0 0 0 3px rgba(250, 119, 5, 0.35);
+}
+
+.hg-share-error {
+  margin-top: 10px;
+  color: #ff6b6b;
+  font-size: 13px;
+  line-height: 20px;
+}
+
+.hg-share-hint {
+  margin-top: 10px;
+  color: hsla(0, 0%, 100%, 0.55);
+  font-size: 13px;
+  line-height: 20px;
+}
+
+.hg-share-confirm {
+  margin-top: 16px;
+  padding: 16px;
+  border: 1px solid hsla(0, 0%, 100%, 0.12);
+  border-radius: 8px;
+  background: rgba(0, 0, 0, 0.28);
+}
+
+.hg-share-title {
+  margin: 0;
+  color: hsla(0, 0%, 100%, 0.95);
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 22px;
+}
+
+.hg-share-sub {
+  margin: 8px 0 0;
+  color: hsla(0, 0%, 100%, 0.55);
+  font-size: 13px;
+  line-height: 20px;
+}

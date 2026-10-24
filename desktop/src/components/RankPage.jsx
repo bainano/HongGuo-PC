@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from 'react';
-import { fetchRankList, fetchRankTypes } from '../api.js';
+import React, { useEffect, useRef, useState } from 'react';
+import { fetchRankList, fetchRankTypes, fetchSeries } from '../api.js';
 import heroHotDrama from '../assets/hero/hero-hot-drama.jpg';
 import heroRealDrama from '../assets/hero/hero-hot-real-drama.jpg';
 import heroAiDrama from '../assets/hero/hero-hot-ai-drama.jpg';
@@ -164,7 +164,7 @@ function Arrow({ dir }) {
   );
 }
 
-export default function RankPage({ initialType = DEFAULT_TYPE, initialPage = 1, onParamsChange, onNavigate, onTitleChange, onOpen }) {
+export default function RankPage({ initialType = DEFAULT_TYPE, initialPage = 1, onParamsChange, onNavigate, onTitleChange, onOpen, onPlay }) {
   const [types, setTypes] = useState(null);
   const [type, setType] = useState(initialType);
   const [page, setPage] = useState(initialPage);
@@ -178,6 +178,33 @@ export default function RankPage({ initialType = DEFAULT_TYPE, initialPage = 1, 
   const [error, setError] = useState(null);
   // 展开选集的卡片（对照原站 pc-item-expanded：默认全部收起，点箭头展开/收起）
   const [expandedId, setExpandedId] = useState(null);
+  // 选集播放 pending：榜单数据不带单集 ID，点击集数先拉详情解析出该集 ID 再打开播放窗口
+  const [playPending, setPlayPending] = useState(null);
+  // 剧集详情缓存：同一部剧连续点选集不重复请求
+  const seriesEpisodesCache = useRef(new Map());
+
+  // 榜单列表不带单集 ID：点击集数时按需拉取剧集详情解析出该集 ID，再走统一播放入口。
+  // 「播放正片」不传集 ID，播放页会自动定位首集。
+  const playEpisode = async (seriesId, n) => {
+    if (!onPlay) return;
+    const key = `${seriesId}:${n}`;
+    if (playPending === key) return;
+    setPlayPending(key);
+    try {
+      let eps = seriesEpisodesCache.current.get(seriesId);
+      if (!eps) {
+        const detail = await fetchSeries(seriesId);
+        eps = Array.isArray(detail?.episodes) ? detail.episodes : [];
+        seriesEpisodesCache.current.set(seriesId, eps);
+      }
+      const ep = eps.find((e) => Number(e.number) === n) || eps[n - 1];
+      if (ep) onPlay(seriesId, ep.id);
+    } catch {
+      // 拉取失败时静默忽略，用户可重试；不阻塞其他交互
+    } finally {
+      setPlayPending(null);
+    }
+  };
 
   // 榜单类型池（后端 /api/rank/types）
   useEffect(() => {
@@ -392,7 +419,10 @@ export default function RankPage({ initialType = DEFAULT_TYPE, initialPage = 1, 
                         <a
                           className="rank-play-button"
                           href="#"
-                          onClick={(e) => e.preventDefault()}
+                          onClick={(e) => {
+                            e.preventDefault();
+                            if (onPlay) onPlay(it.id);
+                          }}
                         >
                           <PlayIcon />
                           播放正片
@@ -402,9 +432,17 @@ export default function RankPage({ initialType = DEFAULT_TYPE, initialPage = 1, 
                             {Array.from({ length: shown }, (_, i) => i + 1).map((n) => (
                               <a
                                 key={n}
-                                className="rank-episode"
+                                className={
+                                  'rank-episode' +
+                                  (playPending === `${it.id}:${n}`
+                                    ? ' rank-episode-pending'
+                                    : '')
+                                }
                                 href="#"
-                                onClick={(e) => e.preventDefault()}
+                                onClick={(e) => {
+                                  e.preventDefault();
+                                  playEpisode(it.id, n);
+                                }}
                                 aria-label={`播放第${n}集`}
                               >
                                 {n}

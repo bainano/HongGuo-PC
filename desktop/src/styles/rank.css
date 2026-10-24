@@ -391,6 +391,14 @@
   background: hsla(0, 0%, 100%, 0.16);
 }
 
+/* 选集播放 pending：正在拉取详情解析单集 ID，禁用重复点击 */
+.rank-episode-pending,
+.rank-episode-pending:hover {
+  cursor: default;
+  opacity: 0.5;
+  pointer-events: none;
+}
+
 .rank-play-button {
   flex: 0 0 168px;
   gap: 12px;

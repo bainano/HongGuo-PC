@@ -2,6 +2,8 @@
 const { contextBridge, ipcRenderer } = require('electron');
 
 contextBridge.exposeInMainWorld('hgWin', {
+  // 运行平台（'darwin' | 'win32' | 'linux'）：渲染层据此切换 macOS 原生标题栏布局
+  platform: process.platform,
   minimize: () => ipcRenderer.send('win:minimize'),
   toggleMaximize: () => ipcRenderer.send('win:toggle-maximize'),
   close: () => ipcRenderer.send('win:close'),
@@ -36,5 +38,7 @@ contextBridge.exposeInMainWorld('hgWin', {
     return () => ipcRenderer.removeListener('win:confirm-close', handler);
   },
   // 用户在关闭确认弹窗中点击“确认关闭”：联动关闭主窗口与播放窗口
-  confirmClose: () => ipcRenderer.send('win:close-confirmed')
+  confirmClose: () => ipcRenderer.send('win:close-confirmed'),
+  // 用户在关闭确认弹窗中点击“取消”：放弃本次关闭，复位主进程协调状态
+  cancelClose: () => ipcRenderer.send('win:close-cancel')
 });

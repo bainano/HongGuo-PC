@@ -102,9 +102,12 @@ export default function SearchPage({ keyword, initialPage = 1, onParamsChange, o
   const [expandedId, setExpandedId] = useState(null);
 
   // 关键词变化时重置到第 1 页（新搜索入口 initialPage 恒为 1，与此一致）
+  // 同时清空旧结果，优先展示骨架，避免残留上一关键词内容
   useEffect(() => {
     setPage(1);
     setExpandedId(null);
+    setData(null);
+    setError(null);
   }, [keyword]);
 
   // URL 驱动（后退/前进、地址直达）：外部页码变化时同步
@@ -113,18 +116,27 @@ export default function SearchPage({ keyword, initialPage = 1, onParamsChange, o
   }, [initialPage]);
 
   // 搜索结果（关键词 / 页码联动）
-  // 与榜单页一致：触发换页立即清空旧内容、第一时间展示骨架图，新数据到达后再渲染
+  // 兜底机制（与 api.js getJSON 的自动重试配合）：
+  // 内容加载【完成前】绝不截断已有内容、也绝不提前报错，判定规则如下——
+  //   1) 发起新请求时不 setData(null)，保留上一页已加载内容（仅首屏/新关键词清空）；
+  //   2) 仅在请求彻底完成（成功或重试耗尽）后才做成功/失败判定；
+  //   3) 失败判定：若全程都未能取到任何内容（data 为空）才展示“加载失败”，
+  //      否则保留上一页内容、不抛错，等待用户再次点击即可重试，
+  //      从而优先保证内容可见、最大化加载成功率。
   useEffect(() => {
     let alive = true;
     setLoading(true);
     setError(null);
-    setData(null);
     fetchSearch(keyword, page)
       .then((d) => {
-        if (alive) setData(d);
+        if (!alive) return;
+        setData(d);
       })
       .catch((e) => {
-        if (alive) setError(e.message);
+        if (!alive) return;
+        // 关键判定：内容加载完成前不触发截断/报错；
+        // 仅当全程都未能取到任何内容时才视为失败
+        if (!data) setError(e.message);
       })
       .finally(() => {
         if (alive) setLoading(false);
@@ -188,6 +200,12 @@ export default function SearchPage({ keyword, initialPage = 1, onParamsChange, o
   return (
     <div className="sr-root">
       <main className="sr-main">
+        {/* 加载提示：换页/重试期间优先保留上一页内容，仅以提示条告知，不截断 */}
+        {loading && (
+          <div className="sr-loading-bar" role="status" aria-label="加载中">
+            加载中…
+          </div>
+        )}
         {error && !items && <div className="load-error">内容服务未连接（{error}）</div>}
         {!items && !error && (
           <ol className="rank-list sr-list" aria-hidden="true">
@@ -207,7 +225,13 @@ export default function SearchPage({ keyword, initialPage = 1, onParamsChange, o
         {items && items.length > 0 && (
           <>
             {/* 结果列表（复用榜单页 rank-* 卡片结构，40px 行距、条目 224px） */}
-            <ol className="rank-list sr-list" aria-label={`“${keyword}”的搜索结果`}>
+            {/* 加载中保留上一页内容并轻微变暗，避免内容被截断 */}
+            <ol
+              className="rank-list sr-list"
+              aria-label={`“${keyword}”的搜索结果`}
+              aria-busy={loading || undefined}
+              style={loading && data ? { opacity: 0.55 } : undefined}
+            >
               {items.map((it) => {
                 const total = totalEpisodes(it);
                 const expanded = expandedId === it.id;

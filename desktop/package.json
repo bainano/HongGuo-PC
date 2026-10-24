@@ -1,22 +1,29 @@
 {
-    "version": "0.2.0",
-    "name": "hongguotv-desktop",
-    "description": "红果短剧桌面版：React 前端 + 无边框 Electron 壳 + 本地内容服务",
-    "scripts": {
-        "dev": "vite",
-        "build": "vite build",
-        "start": "node electron-starter.js",
-        "desktop": "vite build && node electron-starter.js"
-    },
-    "private": true,
-    "main": "main.js",
-    "dependencies": {
-        "react": "^18.3.1",
-        "react-dom": "^18.3.1"
-    },
-    "devDependencies": {
-        "@vitejs/plugin-react": "^4.3.4",
-        "electron": "^45.0.0",
-        "vite": "^5.4.11"
-    }
+  "version": "1.0.0",
+  "name": "hongguotv-desktop",
+  "description": "好看的短剧尽在红果短剧",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "start": "node electron-starter.js",
+    "desktop": "vite build && node electron-starter.js",
+    "pack:win": "vite build && electron-builder --win --x64 --config electron-builder.config.cjs",
+    "pack:mac": "vite build && electron-builder --mac --config electron-builder.config.cjs",
+    "pack:mac:x64": "vite build && electron-builder --mac --x64 --config electron-builder.config.cjs",
+    "pack:mac:arm64": "vite build && electron-builder --mac --arm64 --config electron-builder.config.cjs",
+    "dist": "npm run build && electron-builder --win --mac --config electron-builder.config.cjs",
+    "release": "npm run build && electron-builder --win --mac --config electron-builder.config.cjs --publish always"
+  },
+  "private": true,
+  "main": "main.js",
+  "dependencies": {
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-react": "^4.3.4",
+    "electron": "^45.0.0",
+    "electron-builder": "^25.1.8",
+    "vite": "^5.4.11"
+  }
 }
