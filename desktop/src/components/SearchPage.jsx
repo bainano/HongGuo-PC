@@ -113,11 +113,12 @@ export default function SearchPage({ keyword, initialPage = 1, onParamsChange, o
   }, [initialPage]);
 
   // 搜索结果（关键词 / 页码联动）
-  // 翻页期间保留上一页数据：不清空 data，避免上游瞬态故障时闪现“没有找到”空态
+  // 与榜单页一致：触发换页立即清空旧内容、第一时间展示骨架图，新数据到达后再渲染
   useEffect(() => {
     let alive = true;
     setLoading(true);
     setError(null);
+    setData(null);
     fetchSearch(keyword, page)
       .then((d) => {
         if (alive) setData(d);

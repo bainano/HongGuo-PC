@@ -676,6 +676,19 @@ const server = http.createServer(async (req, res) => {
       if (cached) return json(res, cached, 200, { "X-Cache": "HIT" }, reqStart);
       const data = await fetchOfficialRankPage(slug, page);
       hotLruCache.set(cacheKey, data);
+      // 换页预取：后台预取下一页进缓存（与搜索页同一套预取策略，每榜共 5 页）
+      if (page < 5) {
+        const nextKey = `hot:rank:${slug}:${page + 1}`;
+        if (!hotLruCache.get(nextKey)) {
+          setImmediate(() => {
+            fetchOfficialRankPage(slug, page + 1)
+              .then((nd) => {
+                if (nd) hotLruCache.set(nextKey, nd);
+              })
+              .catch(() => {});
+          });
+        }
+      }
       return json(res, data, 200, { "X-Cache": "MISS" }, reqStart);
     }
 
@@ -750,6 +763,23 @@ const server = http.createServer(async (req, res) => {
         const upstreamRes = { data: await coreProvider.search(q, page) };
         if (upstreamRes.data && Array.isArray(upstreamRes.data.items) && upstreamRes.data.items.length > 0) {
           hotLruCache.set(cacheKey, upstreamRes.data, 180000);
+          // 换页预取：后台预取下一页进缓存，翻页时直接命中（与榜单页换页体验对齐）
+          const totalPages = Number(upstreamRes.data.totalPages) || 0;
+          if (totalPages > page) {
+            const nextKey = `hot:search:${q}:${page + 1}`;
+            if (!hotLruCache.get(nextKey)) {
+              setImmediate(() => {
+                coreProvider
+                  .search(q, page + 1)
+                  .then((nd) => {
+                    if (nd && Array.isArray(nd.items) && nd.items.length > 0) {
+                      hotLruCache.set(nextKey, nd, 180000);
+                    }
+                  })
+                  .catch(() => {});
+              });
+            }
+          }
         }
         return json(res, upstreamRes.data, 200, { "X-Cache": "MISS" }, reqStart);
       } catch (error) {
