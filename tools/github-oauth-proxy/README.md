@@ -108,4 +108,16 @@ GitHub → Settings → Applications → **Authorized OAuth Apps** 里点 Revoke
 **没有 Client ID / Secret**：首次 `login` 的配置页里有预填链接，点进去创建即可，
 回调地址填 `http://127.0.0.1:8765/callback`（换端口就同步改）。
 
+**换取令牌失败 `unable to verify the first certificate`**：这是本机 TLS 被安全软件/网关拦截
+（根 CA 只装在系统里，Node 自带 CA 不认），不是授权失败。工具已内置自动处理：
+检测到 `--use-system-ca` 可用时会用它重新启动自己（日志会打印 `[tls] …` 一行）。
+若仍失败，三选一：
+
+1. `node --use-system-ca github-oauth-proxy.mjs login`（用系统证书，推荐）
+2. 导出拦截用的根 CA 为 pem，`set NODE_EXTRA_CA_CERTS=C:\path\ca.pem`
+3. 仅本机一次性授权、能接受风险时：`set HG_OAUTH_INSECURE=1`（跳过证书校验）
+
+判断标准：报错从「certificate」变成 GitHub 的业务错误（例如 `Not Found`、
+`incorrect client credentials`），就说明网络与证书已通，剩下是凭证问题。
+
 **CI 里要不要用它**：不要。GitHub Actions 用内置的 `secrets.GITHUB_TOKEN` 就够了，本工具只解决「本地人机授权」。

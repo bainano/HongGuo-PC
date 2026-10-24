@@ -23,7 +23,7 @@ import crypto from 'node:crypto';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
-import { spawn } from 'node:child_process';
+import { spawn, spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
@@ -139,6 +139,41 @@ function mask(s) {
   return s.length <= 10 ? '***' : `${s.slice(0, 4)}...${s.slice(-4)}`;
 }
 
+// ===== TLS 兼容 =====
+// Node 默认用自带的 CA 列表，不读 Windows/macOS 系统证书存储。
+// 机器上有安全软件/网关做 TLS 拦截时（根证书只装在系统里），就会报
+// "unable to verify the first certificate / UNABLE_TO_VERIFY_LEAF_SIGNATURE"。
+// 解决：用 --use-system-ca 重新跑一次自身（Node 20+ 支持）。
+const INSECURE = process.env.HG_OAUTH_INSECURE === '1';
+
+function ensureSystemCa() {
+  if (process.env.HG_OAUTH_REEXEC === '1') return;
+  if (process.execArgv.includes('--use-system-ca')) return;
+  let supported = false;
+  try {
+    supported = !!process.allowedNodeEnvironmentFlags && process.allowedNodeEnvironmentFlags.has('--use-system-ca');
+  } catch (_) {}
+  if (!supported) return;
+  console.log('[tls] 检测到本机证书校验异常风险，改用系统证书重新运行（--use-system-ca）…');
+  const r = spawnSync(process.execPath, ['--use-system-ca', fileURLToPath(import.meta.url), ...process.argv.slice(2)], {
+    stdio: 'inherit',
+    env: { ...process.env, HG_OAUTH_REEXEC: '1' }
+  });
+  process.exit(typeof r.status === 'number' ? r.status : 0);
+}
+
+function tlsHint(err) {
+  const m = String((err && err.message) || err || '');
+  if (!/certificate|UNABLE_TO_VERIFY|SELF_SIGNED|CA/i.test(m)) return '';
+  return (
+    '\n[tls] 这是本机 TLS 证书校验问题（多见于安全软件/公司网关做 HTTPS 拦截），不是授权本身失败。\n' +
+    '[tls] 任选其一：\n' +
+    '[tls]   1) node --use-system-ca github-oauth-proxy.mjs login   （用系统证书，推荐）\n' +
+    '[tls]   2) 把拦截用的根 CA 导出为 pem，然后：set NODE_EXTRA_CA_CERTS=C:\\path\\ca.pem\n' +
+    '[tls]   3) 仅本机一次性授权可接受风险时：set HG_OAUTH_INSECURE=1（跳过证书校验）\n'
+  );
+}
+
 // ===== HTTP 小工具 =====
 
 function request(url, { method = 'GET', headers = {}, body = null } = {}) {
@@ -149,6 +184,8 @@ function request(url, { method = 'GET', headers = {}, body = null } = {}) {
         hostname: u.hostname,
         path: u.pathname + u.search,
         method,
+        // HG_OAUTH_INSECURE=1 时跳过证书校验（仅建议在本机一次性授权场景临时使用）
+        rejectUnauthorized: !INSECURE,
         headers: { 'User-Agent': 'hongguo-oauth-proxy', ...headers }
       },
       (res) => {
@@ -306,8 +343,8 @@ function startLogin({ handoff }) {
           setTimeout(() => server.close(() => process.exit(0)), 300);
         }
       } catch (e) {
-        console.error('[error] 换取令牌失败：', e.message);
-        send(500, htmlPage('换取令牌失败', `<p>${e.message}</p>`));
+        console.error('[error] 换取令牌失败：', e.message, tlsHint(e));
+        send(500, htmlPage('换取令牌失败', `<p>${e.message}</p><pre style="white-space:pre-wrap">${tlsHint(e)}</pre>`));
         setTimeout(() => server.close(() => process.exit(1)), 300);
       }
       return;
@@ -403,6 +440,10 @@ function cmdLogout() {
 }
 
 function main() {
+  // 需要联网的命令先确保能用系统证书（否则会被本机 TLS 拦截挡住）
+  ensureSystemCa();
+  if (INSECURE) console.log('[warn] HG_OAUTH_INSECURE=1：已跳过 TLS 证书校验，仅限本机临时使用');
+
   const args = process.argv.slice(2);
   const cmd = args[0] || 'login';
   const portArg = args.indexOf('--port');
