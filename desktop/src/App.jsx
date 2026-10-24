@@ -281,20 +281,6 @@ function MainApp() {
     };
   }, [refreshKey]);
 
-  // 启动图交接：首页数据（或错误）就绪后再淡出，避免启动图下面露出半成品首屏；
-  // 地址直达详情/榜单等页面时用户不看首页，直接让出启动图由目标页骨架屏承接。
-  useEffect(() => {
-    if (sections !== null || error) {
-      window.__hgHideSplash && window.__hgHideSplash();
-    }
-  }, [sections, error]);
-
-  useEffect(() => {
-    if (view !== 'home') {
-      window.__hgHideSplash && window.__hgHideSplash();
-    }
-  }, [view]);
-
   // 标题隐藏阈值（判断式，完全滑入固定导航 64px 下方即不可见）：
   // 榜单 hero 标题底 186px（顶 141 + 高 45）→ scrollY > 122
   // 分类类型 tab 底 166px（margin-top 134 + 高 32）→ scrollY > 102

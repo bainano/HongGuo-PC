@@ -196,8 +196,6 @@ export default function PlayerPage({ seriesId, episodeId, onOpen, onOpenCharacte
       .then((d) => {
         if (!alive) return;
         setData(d);
-        // 播放窗口启动过渡图：详情数据就绪即关闭
-        window.__hgHideSplash && window.__hgHideSplash();
         const eps = Array.isArray(d.episodes) ? d.episodes : [];
         if (!currentEpId && eps.length) {
           setCurrentEpId(eps[0].id);
@@ -205,7 +203,6 @@ export default function PlayerPage({ seriesId, episodeId, onOpen, onOpenCharacte
       })
       .catch((e) => {
         if (alive) setError(e.message);
-        window.__hgHideSplash && window.__hgHideSplash();
       });
     return () => {
       alive = false;
