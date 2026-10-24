@@ -2,8 +2,8 @@
 
 > 好看的短剧尽在红果短剧
 
-第一个正式版本。Windows 安装器、macOS Intel（x64）与 Apple Silicon（arm64）三套安装包，
-由 GitHub Actions 自动构建并随本 Release 发布。
+第一个正式版本。首发提供 Windows 安装版与免安装便携版；
+macOS 版（Intel x64 / Apple Silicon arm64）需 macOS 环境构建，仓库内置一键构建工作流，产出后追加到本 Release。
 
 ## 下载
 
@@ -42,8 +42,9 @@ macOS 版（Intel x64 / Apple Silicon arm64）需要在 macOS 环境构建，
 
 - **macOS 标题栏适配**：改用系统原生红绿灯按钮（`titleBarStyle: 'hidden'`），
   自绘三键在 macOS 下隐藏，标题栏左侧自动避让，双击标题栏空白处最大化。
-- **macOS 安装包**：CI 同时产出 Intel（x64）与 Apple Silicon（arm64）两个 dmg。
-- **GitHub Actions 自动构建 + 自动发布**：推送 `v*` 标签即自动构建三平台安装包并发布 Release。
+- **macOS 构建支持**：内置构建工作流，可一键产出 Intel（x64）与 Apple Silicon（arm64）两个 dmg
+  （手动触发，不在推送时自动运行）。
+- **Windows 免安装便携版**：随 Release 附带 zip，解压即用。
 - 版本号统一为 **1.0.0**。
 
 ### 修复

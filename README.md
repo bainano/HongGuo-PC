@@ -100,7 +100,7 @@ hongguo/
 │  ├─ server/               内容引擎适配层
 │  ├─ shared/               通用工具（含纯 JS SM3 实现）
 │  └─ scripts/service-launcher.mjs  服务守护启动器
-├─ .github/workflows/       GitHub Actions：自动构建 + 自动发布
+├─ .github/workflows/       构建工作流（手动触发）：Windows + macOS x64/arm64
 └─ frontend/                早期网页版参考实现
 ```
 
