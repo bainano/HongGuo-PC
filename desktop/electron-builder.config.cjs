@@ -54,9 +54,7 @@ module.exports = defineConfig({
     target: ['nsis', 'zip'],
     icon: 'icon.ico'
   },
-  zip: {
-    artifactName: '红果短剧-${version}-portable-win-${arch}.${ext}'
-  },
+  // 注意：zip 没有独立的顶层配置段（会被 schema 校验拒绝），产物名使用默认命名
   nsis: {
     oneClick: false,
     // perMachine: true → 安装器清单带 RequestExecutionLevel admin，
