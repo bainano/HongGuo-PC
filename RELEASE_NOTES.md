@@ -9,10 +9,15 @@
 
 | 平台 | 文件 |
 | --- | --- |
-| Windows 64 位（安装版） | `红果短剧-Setup-1.0.0.exe` |
-| Windows 64 位（免安装便携版） | `红果短剧-1.0.0-win.zip` |
-| macOS Intel | `红果短剧-1.0.0-x64.dmg` |
-| macOS Apple Silicon（M 系列） | `红果短剧-1.0.0-arm64.dmg` |
+| Windows 64 位（安装版） | `HongGuo-PC-Setup-1.0.0.exe` |
+| Windows 64 位（免安装便携版） | `HongGuo-PC-1.0.0-win-x64.zip` |
+
+> 文件名使用 ASCII：GitHub Release 的上传接口会剥离资产名中的非 ASCII 字符（中文会被吞掉）。
+> 安装包内部与安装界面显示的产品名仍是「红果短剧」。
+
+macOS 版（Intel x64 / Apple Silicon arm64）需要在 macOS 环境构建，
+仓库已内置一键构建工作流（`.github/workflows/build.yml`，Actions 页面手动运行），
+产出后会自动补齐到本 Release。
 
 **Windows**：双击安装器即可，会自动弹出 UAC 申请管理员权限（中文系统提示），
 不需要手动右键「以管理员身份运行」。

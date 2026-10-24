@@ -23,10 +23,13 @@
 
 | 平台 | 文件 | 说明 |
 | --- | --- | --- |
-| Windows（64 位） | `红果短剧-Setup-<版本>.exe` | 双击即可，安装器会**自动申请管理员权限**（UAC）；无需手动右键「以管理员身份运行」 |
-| Windows（64 位，免安装） | `红果短剧-<版本>-win.zip` | 解压后直接运行 `红果短剧.exe`，不写注册表、不安装 |
-| macOS（Intel） | `红果短剧-<版本>-x64.dmg` | 打开 dmg，把 App 拖进「应用程序」 |
-| macOS（Apple Silicon） | `红果短剧-<版本>-arm64.dmg` | 同上，M 系列机型专用，性能更佳 |
+| Windows（64 位） | `HongGuo-PC-Setup-<版本>.exe` | 双击即可，安装器会**自动申请管理员权限**（UAC）；无需手动右键「以管理员身份运行」 |
+| Windows（64 位，免安装） | `HongGuo-PC-<版本>-win-x64.zip` | 解压后直接运行 `红果短剧.exe`，不写注册表、不安装 |
+| macOS（Intel） | `HongGuo-PC-<版本>-x64.dmg` | 打开 dmg，把 App 拖进「应用程序」 |
+| macOS（Apple Silicon） | `HongGuo-PC-<版本>-arm64.dmg` | 同上，M 系列机型专用，性能更佳 |
+
+> 资产名使用 ASCII：GitHub Release 上传接口会剥离文件名中的非 ASCII 字符。
+> macOS 包需 macOS 环境构建，仓库内置手动构建工作流（`.github/workflows/build.yml`）。
 
 ### macOS 首次打开提示
 
