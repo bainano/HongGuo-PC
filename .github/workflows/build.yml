@@ -28,18 +28,13 @@ jobs:
             script: pack:win
             artifact: HongGuo-PC-Windows-x64
             glob: 'desktop/dist-electron/*.exe'
-          # Intel 包用 macos-13（原生 x64 runner）。
-          # 若该 runner 下线，可把 os 改为 macos-14：electron-builder 支持在 Apple Silicon 上
-          # 交叉构建 x64 dmg（未签名场景无需额外配置）。
-          - os: macos-13
-            name: macOS Intel x64 (DMG)
-            script: pack:mac:x64
-            artifact: HongGuo-PC-macOS-x64
-            glob: 'desktop/dist-electron/*.dmg'
+          # macOS 只跑一个任务：electron-builder 会在同一台 Apple Silicon 机器上
+          # 同时产出 x64 与 arm64 两个 dmg（electron-builder.config.cjs 的 mac.target 已声明两个架构）。
+          # 早期拆成 macos-13(Intel) + macos-14(arm64) 两个任务时，Intel runner 长时间排队等不到机器。
           - os: macos-14
-            name: macOS Apple Silicon arm64 (DMG)
-            script: pack:mac:arm64
-            artifact: HongGuo-PC-macOS-arm64
+            name: macOS (DMG x64 + arm64)
+            script: pack:mac
+            artifact: HongGuo-PC-macOS
             glob: 'desktop/dist-electron/*.dmg'
 
     steps:
