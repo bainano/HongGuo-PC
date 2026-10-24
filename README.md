@@ -29,7 +29,7 @@
 | macOS（Apple Silicon） | `HongGuo-PC-<版本>-arm64.dmg` | 同上，M 系列机型专用，性能更佳 |
 
 > 资产名使用 ASCII：GitHub Release 上传接口会剥离文件名中的非 ASCII 字符。
-> macOS 包需 macOS 环境构建，仓库内置手动构建工作流（`.github/workflows/build.yml`）。
+> macOS 包由仓库内置构建工作流在 macOS 环境产出（`.github/workflows/build.yml`，手动触发）。
 
 ### macOS 首次打开提示
 

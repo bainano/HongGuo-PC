@@ -2,8 +2,7 @@
 
 > 好看的短剧尽在红果短剧
 
-第一个正式版本。首发提供 Windows 安装版与免安装便携版；
-macOS 版（Intel x64 / Apple Silicon arm64）需 macOS 环境构建，仓库内置一键构建工作流，产出后追加到本 Release。
+第一个正式版本，提供 Windows（安装版 / 免安装便携版）与 macOS（Intel x64 / Apple Silicon arm64）四套安装包。
 
 ## 下载
 
@@ -11,13 +10,11 @@ macOS 版（Intel x64 / Apple Silicon arm64）需 macOS 环境构建，仓库内
 | --- | --- |
 | Windows 64 位（安装版） | `HongGuo-PC-Setup-1.0.0.exe` |
 | Windows 64 位（免安装便携版） | `HongGuo-PC-1.0.0-win-x64.zip` |
+| macOS Intel（x64） | `HongGuo-PC-1.0.0-x64.dmg` |
+| macOS Apple Silicon（arm64） | `HongGuo-PC-1.0.0-arm64.dmg` |
 
 > 文件名使用 ASCII：GitHub Release 的上传接口会剥离资产名中的非 ASCII 字符（中文会被吞掉）。
 > 安装包内部与安装界面显示的产品名仍是「红果短剧」。
-
-macOS 版（Intel x64 / Apple Silicon arm64）需要在 macOS 环境构建，
-仓库已内置一键构建工作流（`.github/workflows/build.yml`，Actions 页面手动运行），
-产出后会自动补齐到本 Release。
 
 **Windows**：双击安装器即可，会自动弹出 UAC 申请管理员权限（中文系统提示），
 不需要手动右键「以管理员身份运行」。
