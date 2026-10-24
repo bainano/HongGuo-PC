@@ -546,7 +546,13 @@ function MainApp() {
           role="dialog"
           aria-modal="true"
           aria-labelledby="hg-close-confirm-title"
-          onClick={() => setCloseConfirmOpen(false)}
+          onClick={() => {
+            // 点遮罩关闭 = 取消：必须同步通知主进程复位（含撤销主窗口临时置顶），
+            // 否则主窗口会一直处于置顶状态、抢走其他应用窗口的焦点
+            setCloseConfirmOpen(false);
+            const c = window.hgWin;
+            if (c && c.cancelClose) c.cancelClose();
+          }}
         >
           <div className="hg-modal" onClick={(e) => e.stopPropagation()}>
             <h2 className="hg-modal-title" id="hg-close-confirm-title">确认关闭？</h2>

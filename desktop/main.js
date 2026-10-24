@@ -17,6 +17,7 @@ let allowMainClose = false; // 关闭确认弹窗“确认关闭”后置位，�
 let closeAllPending = false;     // 关闭确认流程进行中：两窗口都暂存，待确认后统一关闭
 let mainCloseReceived = false;   // 本次关闭流程中主窗口是否已收到 close（区分「一键关闭全部」与「单独关播放窗」）
 let playerAloneClosing = false;  // 单独关闭播放窗口（非一键全部）的放行标记
+let onTopWatchdog = null;        // 主窗口临时置顶的看门狗定时器（超时自动撤销置顶）
 let backendChild = null;  // 打包模式下随应用拉起的后端子进程
 
 const isMac = process.platform === 'darwin';
@@ -211,16 +212,21 @@ function createPlayerWindow(seriesId, episodeId) {
     }
     if (win && !win.isDestroyed()) {
       e.preventDefault();
-      raiseMainForConfirm();
+      // 注意：此处不再抢先置顶/聚焦主窗口。
+      // 仅在确认真的进入「一键关闭全部」流程（主窗口也收到 close）时才提升主窗口，
+      // 且主窗口自身的 close 处理里已经完成提升。否则每次单独关闭播放窗口都会
+      // 把主窗口置顶并抢焦点，且没有复位路径，导致主窗口永久压在其他窗口之上。
       setTimeout(() => {
         if (mainCloseReceived) {
           // 主窗口也进入关闭流程 → 一键关闭全部：聚焦主窗口并弹确认
           if (!closeAllPending) {
             closeAllPending = true;
+            raiseMainForConfirm();
             win.webContents.send('win:confirm-close');
           }
         } else {
-          // 仅关闭播放窗口：放行
+          // 仅关闭播放窗口：复位协调状态（含撤销可能的置顶）后放行
+          resetCloseCoordination();
           playerAloneClosing = true;
           playerWin.close();
         }
@@ -230,6 +236,8 @@ function createPlayerWindow(seriesId, episodeId) {
 
   playerWin.on('closed', () => {
     playerWin = null;
+    // 兜底：播放窗口已销毁，关闭确认流程不可能继续，撤销主窗口的临时置顶
+    clearMainOnTop();
   });
 }
 
@@ -257,12 +265,7 @@ ipcMain.on('player:open', (_event, seriesId, episodeId) => {
 // 关闭确认弹窗“确认关闭”：联动关闭主窗口与播放窗口
 ipcMain.on('win:close-confirmed', () => {
   allowMainClose = true;
-  closeAllPending = false;
-  mainCloseReceived = false;
-  playerAloneClosing = false;
-  try {
-    if (win && !win.isDestroyed()) win.setAlwaysOnTop(false);
-  } catch (_) {}
+  resetCloseCoordination();
   if (playerWin && !playerWin.isDestroyed()) playerWin.close();
   if (win && !win.isDestroyed()) win.close();
   allowMainClose = false;
@@ -270,12 +273,7 @@ ipcMain.on('win:close-confirmed', () => {
 
 // 关闭确认弹窗“取消”：放弃本次关闭，复位协调状态，后续关闭恢复正常
 ipcMain.on('win:close-cancel', () => {
-  closeAllPending = false;
-  mainCloseReceived = false;
-  playerAloneClosing = false;
-  try {
-    if (win && !win.isDestroyed()) win.setAlwaysOnTop(false);
-  } catch (_) {}
+  resetCloseCoordination();
 });
 
 // 聚焦主窗口：隐藏/最小化则还原显示；已关闭则兜底重建，保证“回到主界面”可靠可用
@@ -289,12 +287,40 @@ function focusMainWindow() {
   win.focus();
 }
 
-// 「关闭全部窗口」场景下播放窗口仍开着，临时置顶主窗口以确保确认弹窗可见，待确认/取消后还原
+// 撤销主窗口的临时置顶。任何会结束「关闭确认流程」的路径都必须调用它，
+// 否则主窗口会残留 WS_EX_TOPMOST，永久压在其他应用窗口之上（曾导致无法把焦点切走）。
+function clearMainOnTop() {
+  if (onTopWatchdog) {
+    clearTimeout(onTopWatchdog);
+    onTopWatchdog = null;
+  }
+  try {
+    if (win && !win.isDestroyed()) win.setAlwaysOnTop(false);
+  } catch (_) {}
+}
+
+// 复位关闭协调状态，并保证主窗口不残留置顶
+function resetCloseCoordination() {
+  closeAllPending = false;
+  mainCloseReceived = false;
+  playerAloneClosing = false;
+  clearMainOnTop();
+}
+
+// 「关闭全部窗口」场景下播放窗口仍开着，临时置顶主窗口以确保确认弹窗可见，待确认/取消后还原。
+// 同时挂看门狗：若确认弹窗因渲染进程异常等原因始终没有回应，30s 后自动撤销置顶，
+// 避免主窗口无限期抢占焦点。
 function raiseMainForConfirm() {
   focusMainWindow();
   try {
     if (win && !win.isDestroyed()) win.setAlwaysOnTop(true);
   } catch (_) {}
+  if (onTopWatchdog) clearTimeout(onTopWatchdog);
+  onTopWatchdog = setTimeout(() => {
+    onTopWatchdog = null;
+    clearMainOnTop();
+  }, 30000);
+  if (onTopWatchdog && typeof onTopWatchdog.unref === 'function') onTopWatchdog.unref();
 }
 
 // 播放窗口 logo 点击：最小化播放窗口并聚焦主窗口
