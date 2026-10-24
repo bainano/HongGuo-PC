@@ -17,16 +17,31 @@
 
 ---
 
+## 系统支持范围
+
+**支持的操作系统：Windows 10 与 Windows 11。**
+
+| 系统 | 架构 | 支持情况 |
+| --- | --- | --- |
+| Windows 10 / 11 | x64（64 位，Intel / AMD） | 支持（主要目标平台） |
+| Windows 10 / 11 | ARM64（骁龙等 ARM 设备） | 支持，提供原生 ARM64 包 |
+| Windows 10 / 11 | x86（32 位） | **不提供**：Electron 44 起上游不再发布 32 位 Windows 运行时，本项目使用的 Electron 版本无法产出 32 位包 |
+| Windows 7 / 8 / 8.1 | — | 不支持：Electron 已放弃这些系统 |
+| macOS | x64 / arm64 | 作为附带产物提供（未签名、未做适配验证），维护与支持范围以 Windows 10 / 11 为准 |
+
 ## 下载安装
 
 前往 [Releases](https://github.com/bainano/HongGuo-PC/releases) 下载对应平台的安装包：
 
-| 平台 | 文件 | 说明 |
+| 文件 | 适用 | 说明 |
 | --- | --- | --- |
-| Windows（64 位） | `HongGuo-PC-Setup-<版本>.exe` | 双击即可，安装器会**自动申请管理员权限**（UAC）；无需手动右键「以管理员身份运行」 |
-| Windows（64 位，免安装） | `HongGuo-PC-<版本>-win-x64.zip` | 解压后直接运行 `红果短剧.exe`，不写注册表、不安装 |
-| macOS（Intel） | `HongGuo-PC-<版本>-x64.dmg` | 打开 dmg，把 App 拖进「应用程序」 |
-| macOS（Apple Silicon） | `HongGuo-PC-<版本>-arm64.dmg` | 同上，M 系列机型专用，性能更佳 |
+| `HongGuo-PC-Setup-<版本>.exe` | Windows 10/11 | **通用安装器**，内含 x64 + ARM64，安装时按机型自动选择；双击即可，自动申请管理员权限（UAC） |
+| `HongGuo-PC-Setup-<版本>-win-x64.exe` | Windows 10/11 64 位 | 仅 x64 的安装器，体积更小 |
+| `HongGuo-PC-Setup-<版本>-win-arm64.exe` | Windows 10/11 ARM | 仅 ARM64 的安装器 |
+| `HongGuo-PC-<版本>-win-x64.zip` | Windows 10/11 64 位 | 免安装便携版，解压后运行 `红果短剧.exe` |
+| `HongGuo-PC-<版本>-win-arm64.zip` | Windows 10/11 ARM | ARM64 免安装便携版 |
+| `HongGuo-PC-<版本>-x64.dmg` | macOS Intel | 打开 dmg，把 App 拖进「应用程序」 |
+| `HongGuo-PC-<版本>-arm64.dmg` | macOS Apple Silicon | 同上，M 系列机型专用 |
 
 > 资产名使用 ASCII：GitHub Release 上传接口会剥离文件名中的非 ASCII 字符。
 > macOS 包由仓库内置构建工作流在 macOS 环境产出（`.github/workflows/build.yml`，手动触发）。

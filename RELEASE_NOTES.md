@@ -6,15 +6,24 @@
 
 ## 下载
 
-| 平台 | 文件 |
+**支持的操作系统：Windows 10 与 Windows 11。**
+
+| 文件 | 适用 |
 | --- | --- |
-| Windows 64 位（安装版） | `HongGuo-PC-Setup-1.0.0.exe` |
-| Windows 64 位（免安装便携版） | `HongGuo-PC-1.0.0-win-x64.zip` |
-| macOS Intel（x64） | `HongGuo-PC-1.0.0-x64.dmg` |
-| macOS Apple Silicon（arm64） | `HongGuo-PC-1.0.0-arm64.dmg` |
+| `HongGuo-PC-Setup-1.0.0.exe` | Windows 10/11 **通用安装器**（内含 x64 + ARM64，按机型自动选择） |
+| `HongGuo-PC-Setup-1.0.0-win-x64.exe` | Windows 10/11 64 位安装器 |
+| `HongGuo-PC-Setup-1.0.0-win-arm64.exe` | Windows 10/11 ARM64 安装器 |
+| `HongGuo-PC-1.0.0-win-x64.zip` | Windows 10/11 64 位免安装便携版 |
+| `HongGuo-PC-1.0.0-win-arm64.zip` | Windows 10/11 ARM64 免安装便携版 |
+| `HongGuo-PC-1.0.0-x64.dmg` | macOS Intel |
+| `HongGuo-PC-1.0.0-arm64.dmg` | macOS Apple Silicon |
 
 > 文件名使用 ASCII：GitHub Release 的上传接口会剥离资产名中的非 ASCII 字符（中文会被吞掉）。
 > 安装包内部与安装界面显示的产品名仍是「红果短剧」。
+
+**关于 32 位（x86）Windows**：本版本不提供。Electron 44 起上游不再发布 32 位 Windows
+运行时，本项目使用的 Electron 45 无法产出 32 位包；如需 32 位只能把 Electron 降到 43 及更早。
+Windows 7 / 8 同样不支持（Electron 已放弃）。
 
 **Windows**：双击安装器即可，会自动弹出 UAC 申请管理员权限（中文系统提示），
 不需要手动右键「以管理员身份运行」。

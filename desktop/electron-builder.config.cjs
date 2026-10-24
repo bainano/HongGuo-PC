@@ -50,8 +50,14 @@ module.exports = defineConfig({
     }
   ],
   win: {
+    // x64：主流 64 位 Windows 10/11；arm64：骁龙等 ARM 设备的 Windows 10/11
     // nsis：安装器（自动提权）；zip：免安装便携版（解压即用）
-    target: ['nsis', 'zip'],
+    // 32 位（ia32）不出包：Electron 44 起上游不再发布 win32-ia32 运行时，
+    // 本项目的 Electron 版本无法产出 32 位包（如需 32 位只能降级到 Electron 43 及更早）。
+    target: [
+      { target: 'nsis', arch: ['x64', 'arm64'] },
+      { target: 'zip', arch: ['x64', 'arm64'] }
+    ],
     icon: 'icon.ico'
   },
   // 注意：zip 没有独立的顶层配置段（会被 schema 校验拒绝），产物名使用默认命名
@@ -62,7 +68,8 @@ module.exports = defineConfig({
     // 无需手动「以管理员身份运行」；安装到 Program Files（所有用户可用）。
     perMachine: true,
     allowToChangeInstallationDirectory: true,
-    artifactName: '红果短剧-Setup-${version}.${ext}'
+    // 三个架构的安装器同名会互相覆盖，产物名必须带上 ${arch}
+    artifactName: '红果短剧-Setup-${version}-${arch}.${ext}'
   },
   mac: {
     // 同时产出 Intel(x64) 与 Apple Silicon(arm64) 两个 dmg
