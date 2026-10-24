@@ -30,6 +30,10 @@
 - 存放位置（**任选其一，禁止写入仓库**）：
   - 本机文件：`C:\hg-out\gh_token.txt`（UTF-8 无 BOM、无换行，600 权限）
   - 环境变量：`HG_GITHUB_TOKEN`
+  - 或用仓库自带的 OAuth 代理工具获取（推荐，不用手写令牌）：
+    `node tools/github-oauth-proxy/github-oauth-proxy.mjs token`，
+    首次使用时运行 `login`（Windows 双击 `tools/github-oauth-proxy/start.cmd`），
+    在浏览器里点一次授权即可；令牌以 AES-256-GCM 加密存放在 `~/.hongguo/`，见该目录 README
 - 硬性规则：
   1. **令牌明文不得出现在任何入库文件中**（README、文档、代码、commit message、Release 正文都不行）——GitHub 会扫描到并自动吊销
   2. 本文档只说明「在哪用、怎么用」，不保存令牌明文

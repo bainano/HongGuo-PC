@@ -32,6 +32,8 @@ backend/custom-server/data/
 .env.*
 *.pem
 *.key
+# OAuth 代理的本地配置（含 client secret），令牌本身存在 ~/.hongguo/（仓库外）
+tools/github-oauth-proxy/config.json
 
 # ===== OS / editor =====
 .DS_Store
