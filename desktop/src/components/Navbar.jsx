@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import logoTitle from '../assets/logo-title.svg';
 import { fetchSuggestions } from '../api.js';
+import Tip from './Tooltip.jsx';
 
 // 顶部导航：品牌 + 导航工具（后退/前进/刷新）+ 首页/分类/榜单（含下拉）+ 搜索框
 // activeNav: 'home' | 'category' | 'rank' —— 当前高亮的导航项
@@ -183,17 +184,18 @@ export default function Navbar({
 
   return (
     <header className="pc-container-header">
-      <a
-        className="pc-brand-link"
-        href="#"
-        onClick={(e) => {
-          e.preventDefault();
-          go('home', e);
-        }}
-        title="回到首页"
-      >
-        <img className="pc-icon-link" src={logoTitle} alt="红果短剧logo" />
-      </a>
+      <Tip label="回到首页">
+        <a
+          className="pc-brand-link"
+          href="#"
+          onClick={(e) => {
+            e.preventDefault();
+            go('home', e);
+          }}
+        >
+          <img className="pc-icon-link" src={logoTitle} alt="红果短剧logo" />
+        </a>
+      </Tip>
       {navTools}
       <div className="links">
         <button

@@ -11,21 +11,17 @@ import './styles/detail.css';
 import './styles/player.css';
 import './styles/search.css';
 
-// 启动过渡图：从脚本执行起计时，首屏内容就绪（App 调用 __hgHideSplash）后淡出移除；
-// 最短展示 900ms，避免一闪而过 / 黑屏
+// 启动过渡图：首屏内容就绪（App 调用 __hgHideSplash）后立即淡出移除；
+// 显示时长完全匹配真实加载耗时，不设最短展示限制
 const splashEl = document.getElementById('hg-splash');
-const splashStart = performance.now();
 let splashHidden = false;
 window.__hgHideSplash = () => {
   if (splashHidden || !splashEl) return;
   splashHidden = true;
-  const wait = Math.max(0, 900 - (performance.now() - splashStart));
-  setTimeout(() => {
-    splashEl.classList.add('hg-splash-hide');
-    splashEl.addEventListener('transitionend', () => splashEl.remove(), { once: true });
-    // 兜底：过渡未触发时强制移除
-    setTimeout(() => splashEl.parentNode && splashEl.remove(), 600);
-  }, wait);
+  splashEl.classList.add('hg-splash-hide');
+  splashEl.addEventListener('transitionend', () => splashEl.remove(), { once: true });
+  // 兜底：过渡未触发时强制移除
+  setTimeout(() => splashEl.parentNode && splashEl.remove(), 600);
 };
 // 兜底：8s 内无论内容是否就绪都关闭过渡图，避免极端情况下永久遮挡
 setTimeout(() => window.__hgHideSplash(), 8000);

@@ -6,6 +6,7 @@ import heroAiDrama from '../assets/hero/hero-hot-ai-drama.jpg';
 import heroComicDrama from '../assets/hero/hero-hot-comic-drama.jpg';
 import { ScoreIcon, HeatIcon, PlayIcon } from './Icons.jsx';
 import { SkeletonListCard } from './Skeletons.jsx';
+import Tip from './Tooltip.jsx';
 
 // 榜单页（对照原站结构）：
 // hero 横幅（四大榜单各一张，切榜即换图）→ 面包屑 → 榜单 tabs → 名次列表（角标/热度/状态评分收藏点赞胶囊/题材点分隔/简介/播放正片+选集展开收起）→ 分页
@@ -379,7 +380,11 @@ export default function RankPage({ initialType = DEFAULT_TYPE, initialPage = 1, 
                           ))}
                         </p>
                       )}
-                      {it.description && <p className="rank-desc">{it.description}</p>}
+                      {it.description && (
+                        <Tip label={it.description} multiline>
+                          <p className="rank-desc">{it.description}</p>
+                        </Tip>
+                      )}
                       <div
                         className="rank-episodes"
                         aria-label={`${it.title}选集`}

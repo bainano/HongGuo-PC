@@ -3,6 +3,7 @@ import { fetchSeries } from '../api.js';
 import SeriesCard from './SeriesCard.jsx';
 import { ScoreIcon, HeatIcon, PlayIcon } from './Icons.jsx';
 import { SkeletonDetail } from './Skeletons.jsx';
+import Tip from './Tooltip.jsx';
 
 // 详情页（对照原站 detail 页结构，数据来自本地 /api/series/:id）：
 //   背景大图 → 返回入口 → 剧集 hero（封面/标题/热度/评分/标签/演员/简介/播放正片）
@@ -154,15 +155,15 @@ export default function DetailPage({ seriesId, onOpen, onOpenCharacter, onPlay, 
                 const link = isFirst ? data.firstTagLink : null;
                 if (link && onNavigate) {
                   return (
-                    <button
-                      type="button"
-                      className="dt-hero-tag dt-hero-tag-link"
-                      key={t}
-                      onClick={() => onNavigate('category', link.type, link.tag)}
-                      title={`查看${t}分类`}
-                    >
-                      {t}
-                    </button>
+                    <Tip label={`查看${t}分类`} key={t}>
+                      <button
+                        type="button"
+                        className="dt-hero-tag dt-hero-tag-link"
+                        onClick={() => onNavigate('category', link.type, link.tag)}
+                      >
+                        {t}
+                      </button>
+                    </Tip>
                   );
                 }
                 return (
@@ -195,13 +196,14 @@ export default function DetailPage({ seriesId, onOpen, onOpenCharacter, onPlay, 
             )}
             {data.description && (
               <div className="dt-hero-desc-wrap">
-                <p
-                  className={'dt-hero-desc' + (descOpen ? ' dt-hero-desc-open' : '')}
-                  onClick={() => setDescOpen((v) => !v)}
-                  title={descOpen ? '收起' : '展开简介'}
-                >
-                  简介：{data.description}
-                </p>
+                <Tip label={descOpen ? '收起' : '展开简介'}>
+                  <p
+                    className={'dt-hero-desc' + (descOpen ? ' dt-hero-desc-open' : '')}
+                    onClick={() => setDescOpen((v) => !v)}
+                  >
+                    简介：{data.description}
+                  </p>
+                </Tip>
               </div>
             )}
             <div className="dt-hero-actions">
@@ -232,15 +234,15 @@ export default function DetailPage({ seriesId, onOpen, onOpenCharacter, onPlay, 
               }
             >
               {episodes.map((ep) => (
-                <button
-                  type="button"
-                  className="dt-episode-cell"
-                  key={ep.id}
-                  onClick={() => play(ep.id)}
-                  title={ep.title}
-                >
-                  {ep.number}
-                </button>
+                <Tip label={ep.title} key={ep.id}>
+                  <button
+                    type="button"
+                    className="dt-episode-cell"
+                    onClick={() => play(ep.id)}
+                  >
+                    {ep.number}
+                  </button>
+                </Tip>
               ))}
               {episodes.length > 18 && (
                 <button

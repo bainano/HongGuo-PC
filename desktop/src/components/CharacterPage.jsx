@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { fetchCharacter } from '../api.js';
 import { SkeletonCharacter } from './Skeletons.jsx';
+import Tip from './Tooltip.jsx';
 import officialVPng from '../assets/official-v.png';
 import registeredPng from '../assets/registered.png';
 
@@ -84,26 +85,28 @@ export default function CharacterPage({ characterId, onOpen }) {
               <span className="ch-avatar ch-avatar-empty" aria-hidden="true" />
             )}
             {data.isBlueVip && (
-              <img
-                className="ch-avatar-v"
-                src={officialVPng}
-                alt="蓝V认证"
-                title="蓝V认证"
-                draggable="false"
-              />
+              <Tip label="蓝V认证">
+                <img
+                  className="ch-avatar-v"
+                  src={officialVPng}
+                  alt="蓝V认证"
+                  draggable="false"
+                />
+              </Tip>
             )}
           </div>
           <div className="ch-info">
             <div className="ch-name-row">
               <h1 className="ch-name">{data.name}</h1>
               {data.hasRegistered && (
-                <img
-                  className="ch-registered"
-                  src={registeredPng}
-                  alt="已入驻"
-                  title="已入驻"
-                  draggable="false"
-                />
+                <Tip label="已入驻">
+                  <img
+                    className="ch-registered"
+                    src={registeredPng}
+                    alt="已入驻"
+                    draggable="false"
+                  />
+                </Tip>
               )}
             </div>
             {data.role && <div className="ch-role">{data.role}</div>}

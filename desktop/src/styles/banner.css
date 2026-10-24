@@ -94,9 +94,9 @@
 /* 艺术字剧名图：固定清晰可读的高度，宽度自适应、左对齐，不超出文字区 */
 .pc-banner-title-img {
   display: block;
-  height: 96px;
+  height: 160px;
   width: auto;
-  max-width: 560px;
+  max-width: 640px;
   object-fit: contain;
   object-position: left center;
 }

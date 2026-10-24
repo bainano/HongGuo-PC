@@ -1,6 +1,7 @@
 import React from 'react';
 import NavTools from './NavTools.jsx';
 import WindowControls from './WindowControls.jsx';
+import Tip from './Tooltip.jsx';
 import iconPc from '../assets/icon-pc.svg';
 
 // 独立播放窗口标题栏：复用主窗口标题栏组件（logo + 导航工具 + 窗口控制），
@@ -16,16 +17,17 @@ export default function TitleBar({
 }) {
   return (
     <div className="pl-titlebar">
-      <button
-        type="button"
-        className="tb-logo"
-        onClick={onLogoClick}
-        title="回到主界面"
-        aria-label="回到主界面"
-      >
-        <img className="tb-logo-img" src={iconPc} alt="" draggable="false" />
-        <span className="tb-logo-text">回到主界面</span>
-      </button>
+      <Tip label="回到主界面">
+        <button
+          type="button"
+          className="tb-logo"
+          onClick={onLogoClick}
+          aria-label="回到主界面"
+        >
+          <img className="tb-logo-img" src={iconPc} alt="" draggable="false" />
+          <span className="tb-logo-text">回到主界面</span>
+        </button>
+      </Tip>
       <NavTools
         canGoBack={canGoBack}
         canGoForward={canGoForward}

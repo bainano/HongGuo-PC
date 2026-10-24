@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import Tip from './Tooltip.jsx';
 
 const ROTATE_MS = 5000;
 
@@ -88,7 +89,11 @@ export default function HomeBanner({ banners, onOpen }) {
                       ))}
                     </p>
                   )}
-                  {b.description && <p className="pc-banner-desc">{b.description}</p>}
+                  {b.description && (
+                    <Tip label={b.description} multiline>
+                      <p className="pc-banner-desc">{b.description}</p>
+                    </Tip>
+                  )}
                 </div>
               </a>
             </article>

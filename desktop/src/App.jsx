@@ -395,6 +395,14 @@ function MainApp() {
     });
   }, []);
 
+  // 主窗口关闭确认：存在活跃播放窗口时，主进程拦截 close 并转发到此弹窗
+  const [closeConfirmOpen, setCloseConfirmOpen] = useState(false);
+  useEffect(() => {
+    const c = window.hgWin;
+    if (!c || !c.onConfirmClose) return;
+    return c.onConfirmClose(() => setCloseConfirmOpen(true));
+  }, []);
+
   // 播放入口：桌面端打开独立播放窗口；网页版无窗口能力，走应用内播放页路由
   const onPlay = (seriesId, episodeId) => {
     const c = window.hgWin;
@@ -525,6 +533,43 @@ function MainApp() {
           onTitleChange={setCatTitle}
           onOpen={(id) => onNavigate('detail', id)}
         />
+      )}
+      {/* 关闭确认弹窗：有正在播放的内容时，确认是否联动关闭主窗口与播放窗口 */}
+      {closeConfirmOpen && (
+        <div
+          className="hg-modal-mask"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="hg-close-confirm-title"
+          onClick={() => setCloseConfirmOpen(false)}
+        >
+          <div className="hg-modal" onClick={(e) => e.stopPropagation()}>
+            <h2 className="hg-modal-title" id="hg-close-confirm-title">确认关闭？</h2>
+            <p className="hg-modal-desc">
+              当前有正在播放的内容。关闭主窗口将同时关闭关联的播放窗口。
+            </p>
+            <div className="hg-modal-actions">
+              <button
+                type="button"
+                className="hg-modal-btn"
+                onClick={() => setCloseConfirmOpen(false)}
+              >
+                取消
+              </button>
+              <button
+                type="button"
+                className="hg-modal-btn hg-modal-btn-primary"
+                onClick={() => {
+                  setCloseConfirmOpen(false);
+                  const c = window.hgWin;
+                  if (c && c.confirmClose) c.confirmClose();
+                }}
+              >
+                确认关闭
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );

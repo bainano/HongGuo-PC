@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import Tip from './Tooltip.jsx';
 
 // Segoe Fluent Icons 路径（y 轴已翻转，24 viewBox 内渲染）
 const MAX_D =
@@ -49,36 +50,39 @@ export default function WindowControls() {
 
   return (
     <div className="hg-win-controls" role="group" aria-label="窗口控制">
-      <button
-        type="button"
-        className="hg-win-btn"
-        id="hg-min"
-        title="最小化"
-        aria-label="最小化"
-        onClick={() => act((c) => c.minimize())}
-      >
-        <Icon d={MIN_D} t={MIN_T} />
-      </button>
-      <button
-        type="button"
-        className="hg-win-btn"
-        id="hg-max"
-        title={maximized ? '还原' : '最大化'}
-        aria-label={maximized ? '还原' : '最大化'}
-        onClick={() => act((c) => c.toggleMaximize())}
-      >
-        <Icon d={maximized ? RESTORE_D : MAX_D} t={MAX_T} id="hg-max-icon" />
-      </button>
-      <button
-        type="button"
-        className="hg-win-btn"
-        id="hg-close"
-        title="关闭"
-        aria-label="关闭"
-        onClick={() => act((c) => c.close())}
-      >
-        <Icon d={CLOSE_D} t={MAX_T} />
-      </button>
+      <Tip label="最小化">
+        <button
+          type="button"
+          className="hg-win-btn"
+          id="hg-min"
+          aria-label="最小化"
+          onClick={() => act((c) => c.minimize())}
+        >
+          <Icon d={MIN_D} t={MIN_T} />
+        </button>
+      </Tip>
+      <Tip label={maximized ? '还原' : '最大化'}>
+        <button
+          type="button"
+          className="hg-win-btn"
+          id="hg-max"
+          aria-label={maximized ? '还原' : '最大化'}
+          onClick={() => act((c) => c.toggleMaximize())}
+        >
+          <Icon d={maximized ? RESTORE_D : MAX_D} t={MAX_T} id="hg-max-icon" />
+        </button>
+      </Tip>
+      <Tip label="关闭">
+        <button
+          type="button"
+          className="hg-win-btn"
+          id="hg-close"
+          aria-label="关闭"
+          onClick={() => act((c) => c.close())}
+        >
+          <Icon d={CLOSE_D} t={MAX_T} />
+        </button>
+      </Tip>
     </div>
   );
 }

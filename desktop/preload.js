@@ -28,5 +28,13 @@ contextBridge.exposeInMainWorld('hgWin', {
     const handler = (_event, payload) => cb(payload || {});
     ipcRenderer.on('player:navigate', handler);
     return () => ipcRenderer.removeListener('player:navigate', handler);
-  }
+  },
+  // 主窗口监听：存在活跃播放窗口时，主进程拦截关闭并请求用户确认
+  onConfirmClose: (cb) => {
+    const handler = () => cb();
+    ipcRenderer.on('win:confirm-close', handler);
+    return () => ipcRenderer.removeListener('win:confirm-close', handler);
+  },
+  // 用户在关闭确认弹窗中点击“确认关闭”：联动关闭主窗口与播放窗口
+  confirmClose: () => ipcRenderer.send('win:close-confirmed')
 });

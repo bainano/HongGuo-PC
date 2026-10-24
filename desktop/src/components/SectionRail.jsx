@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import SeriesCard from './SeriesCard.jsx';
+import Tip from './Tooltip.jsx';
 
 // sections 的 type（all/human/comic/ai）→ 官方四大排行榜 slug（对齐后端 /api/rank/types）
 const RANK_MAP = {
@@ -47,26 +48,27 @@ export default function SectionRail({ section, onNavigate, onOpen }) {
   return (
     <section className="pc-section">
       <div className="pc-header">
-        <a
-          className="pc-title-link"
-          href="#"
-          onClick={gotoRank}
-          title={`查看更多${section.name}`}
-        >
-          <h2 className="pc-title">{section.name}</h2>
-          <svg
-            className="pc-title-arrow"
-            viewBox="0 0 12 12"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
-            aria-hidden="true"
+        <Tip label={`查看更多${section.name}`}>
+          <a
+            className="pc-title-link"
+            href="#"
+            onClick={gotoRank}
           >
-            <path
-              d="M4.33801 8.87409C4.09573 9.11769 4.09573 9.51124 4.33801 9.75485C4.58217 10.0003 4.97943 10.0003 5.22358 9.75485L8.51761 6.44284C8.76083 6.19829 8.76083 5.8018 8.51761 5.55726L5.22358 2.24525C4.97943 1.99977 4.58217 1.99977 4.33801 2.24525C4.09573 2.48885 4.09573 2.88241 4.33801 3.12601L7.19645 6.00005L4.33801 8.87409Z"
-              fill="white"
-            />
-          </svg>
-        </a>
+            <h2 className="pc-title">{section.name}</h2>
+            <svg
+              className="pc-title-arrow"
+              viewBox="0 0 12 12"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+              aria-hidden="true"
+            >
+              <path
+                d="M4.33801 8.87409C4.09573 9.11769 4.09573 9.51124 4.33801 9.75485C4.58217 10.0003 4.97943 10.0003 5.22358 9.75485L8.51761 6.44284C8.76083 6.19829 8.76083 5.8018 8.51761 5.55726L5.22358 2.24525C4.97943 1.99977 4.58217 1.99977 4.33801 2.24525C4.09573 2.48885 4.09573 2.88241 4.33801 3.12601L7.19645 6.00005L4.33801 8.87409Z"
+                fill="white"
+              />
+            </svg>
+          </a>
+        </Tip>
       </div>
       <div className="pc-rail-wrap">
         <div
@@ -125,29 +127,30 @@ export default function SectionRail({ section, onNavigate, onOpen }) {
             />
           ))}
           {/* 查看更多卡片：轨道末尾入口，进入对应榜单 */}
-          <a
-            className="pc-view-all-card"
-            href="#"
-            onClick={gotoRank}
-            title={`查看更多${section.name}`}
-          >
-            <span className="pc-view-all-text">查看全部</span>
-            <svg
-              className="pc-view-all-arrow"
-              viewBox="0 0 14 14"
-              fill="none"
-              xmlns="http://www.w3.org/2000/svg"
-              aria-hidden="true"
+          <Tip label={`查看更多${section.name}`}>
+            <a
+              className="pc-view-all-card"
+              href="#"
+              onClick={gotoRank}
             >
-              <path
-                d="M4.5 2.75 8.75 7 4.5 11.25"
-                stroke="white"
-                strokeWidth="1.6"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-            </svg>
-          </a>
+              <span className="pc-view-all-text">查看全部</span>
+              <svg
+                className="pc-view-all-arrow"
+                viewBox="0 0 14 14"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+                aria-hidden="true"
+              >
+                <path
+                  d="M4.5 2.75 8.75 7 4.5 11.25"
+                  stroke="white"
+                  strokeWidth="1.6"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
+            </a>
+          </Tip>
         </div>
       </div>
     </section>

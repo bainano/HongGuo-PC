@@ -1,4 +1,5 @@
 import React from 'react';
+import Tip from './Tooltip.jsx';
 
 // 标题栏导航工具：后退 / 前进 / 刷新（主窗口与播放窗口标题栏共用）
 export default function NavTools({
@@ -10,47 +11,50 @@ export default function NavTools({
 }) {
   return (
     <div className="nv-tools" role="group" aria-label="页面导航">
-      <button
-        type="button"
-        className="nv-tool-btn"
-        disabled={!canGoBack}
-        onClick={onBack}
-        title="后退"
-        aria-label="后退"
-      >
-        <svg viewBox="0 0 16 16" fill="none" aria-hidden="true">
-          <path d="M10 3.5 5.5 8 10 12.5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
-        </svg>
-      </button>
-      <button
-        type="button"
-        className="nv-tool-btn"
-        disabled={!canGoForward}
-        onClick={onForward}
-        title="前进"
-        aria-label="前进"
-      >
-        <svg viewBox="0 0 16 16" fill="none" aria-hidden="true">
-          <path d="M6 3.5 10.5 8 6 12.5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
-        </svg>
-      </button>
-      <button
-        type="button"
-        className="nv-tool-btn"
-        onClick={onRefresh}
-        title="刷新"
-        aria-label="刷新"
-      >
-        <svg viewBox="0 0 16 16" fill="none" aria-hidden="true">
-          <path
-            d="M13.6 8A5.6 5.6 0 1 1 8 2.4c1.5 0 2.9.6 3.9 1.6M13.5 2.2v2.8h-2.8"
-            stroke="currentColor"
-            strokeWidth="1.6"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          />
-        </svg>
-      </button>
+      <Tip label="后退">
+        <button
+          type="button"
+          className="nv-tool-btn"
+          disabled={!canGoBack}
+          onClick={onBack}
+          aria-label="后退"
+        >
+          <svg viewBox="0 0 16 16" fill="none" aria-hidden="true">
+            <path d="M10 3.5 5.5 8 10 12.5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
+        </button>
+      </Tip>
+      <Tip label="前进">
+        <button
+          type="button"
+          className="nv-tool-btn"
+          disabled={!canGoForward}
+          onClick={onForward}
+          aria-label="前进"
+        >
+          <svg viewBox="0 0 16 16" fill="none" aria-hidden="true">
+            <path d="M6 3.5 10.5 8 6 12.5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
+        </button>
+      </Tip>
+      <Tip label="刷新">
+        <button
+          type="button"
+          className="nv-tool-btn"
+          onClick={onRefresh}
+          aria-label="刷新"
+        >
+          <svg viewBox="0 0 16 16" fill="none" aria-hidden="true">
+            <path
+              d="M13.6 8A5.6 5.6 0 1 1 8 2.4c1.5 0 2.9.6 3.9 1.6M13.5 2.2v2.8h-2.8"
+              stroke="currentColor"
+              strokeWidth="1.6"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          </svg>
+        </button>
+      </Tip>
     </div>
   );
 }

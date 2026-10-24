@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState, useCallback } from 'react';
 import { fetchSeries, fetchQualities, streamUrl } from '../api.js';
+import Tip from './Tooltip.jsx';
 import playingIcon from '../assets/playing.png';
 
 // 播放页（对照原站 player 页结构，数据来自本地后端）：
@@ -603,9 +604,11 @@ export default function PlayerPage({ seriesId, episodeId, onOpen, onOpenCharacte
                       {playing ? <PauseSvg size={32} /> : <PlaySvg size={32} />}
                     </button>
 
-                    <button type="button" className="pl-ctrl-btn pl-next-btn" onClick={goNext} aria-label="下一集" title="下一集">
-                      <NextSvg size={32} />
-                    </button>
+                    <Tip label="下一集">
+                      <button type="button" className="pl-ctrl-btn pl-next-btn" onClick={goNext} aria-label="下一集">
+                        <NextSvg size={32} />
+                      </button>
+                    </Tip>
 
                     <span className="pl-time">
                       {fmtTime(currentTime)} / {fmtTime(duration)}
@@ -822,21 +825,21 @@ export default function PlayerPage({ seriesId, episodeId, onOpen, onOpenCharacte
                     {curSeg?.episodes.map((ep) => {
                       const active = ep.id === currentEpId;
                       return (
-                        <button
-                          type="button"
-                          key={ep.id}
-                          className={
-                            'pl-episode' +
-                            (active ? ' pl-episode-active' : '')
-                          }
-                          onClick={() => selectEpisode(ep)}
-                          title={`第${ep.number}集`}
-                        >
-                          <span className={'pl-episode-text' + (active ? ' pl-episode-text-active' : '')}>
-                            {ep.number}
-                          </span>
-                          {active && <img className="pl-playing" src={playingIcon} alt="正在播放" />}
-                        </button>
+                        <Tip label={`第${ep.number}集`} key={ep.id}>
+                          <button
+                            type="button"
+                            className={
+                              'pl-episode' +
+                              (active ? ' pl-episode-active' : '')
+                            }
+                            onClick={() => selectEpisode(ep)}
+                          >
+                            <span className={'pl-episode-text' + (active ? ' pl-episode-text-active' : '')}>
+                              {ep.number}
+                            </span>
+                            {active && <img className="pl-playing" src={playingIcon} alt="正在播放" />}
+                          </button>
+                        </Tip>
                       );
                     })}
                   </div>

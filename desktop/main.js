@@ -12,6 +12,7 @@ app.commandLine.appendSwitch('autoplay-policy', 'no-user-gesture-required');
 
 let win = null;          // 主窗口
 let playerWin = null;    // 独立播放窗口
+let allowMainClose = false; // 关闭确认弹窗“确认关闭”后置位，跳过 close 拦截
 
 // 取发送 IPC 消息的渲染进程所属窗口，使窗口控制在任意窗口内均生效
 function senderWin(event) {
@@ -81,6 +82,15 @@ function createWindow() {
   win.webContents.setWindowOpenHandler(({ url }) => {
     shell.openExternal(url);
     return { action: 'deny' };
+  });
+
+  // 关闭拦截：存在活跃播放窗口时，先经渲染进程确认再决定是否联动关闭
+  win.on('close', (e) => {
+    if (allowMainClose) return;
+    if (playerWin && !playerWin.isDestroyed()) {
+      e.preventDefault();
+      win.webContents.send('win:confirm-close');
+    }
   });
 
   win.on('closed', () => {
@@ -184,9 +194,20 @@ ipcMain.on('player:open', (_event, seriesId, episodeId) => {
   if (seriesId) createPlayerWindow(String(seriesId), episodeId ? String(episodeId) : null);
 });
 
-// 聚焦主窗口（主窗口被最小化时先还原）
+// 关闭确认弹窗“确认关闭”：联动关闭主窗口与播放窗口
+ipcMain.on('win:close-confirmed', () => {
+  allowMainClose = true;
+  if (playerWin && !playerWin.isDestroyed()) playerWin.close();
+  if (win && !win.isDestroyed()) win.close();
+  allowMainClose = false;
+});
+
+// 聚焦主窗口：隐藏/最小化则还原显示；已关闭则兜底重建，保证“回到主界面”可靠可用
 function focusMainWindow() {
-  if (!win || win.isDestroyed()) return;
+  if (!win || win.isDestroyed()) {
+    createWindow();
+    return;
+  }
   if (win.isMinimized()) win.restore();
   win.show();
   win.focus();
@@ -201,7 +222,15 @@ ipcMain.on('player:minimize-focus-main', (event) => {
 
 // 播放窗口内点击演员：聚焦主窗口并在主窗口中打开演员详情页
 ipcMain.on('player:open-character', (_event, id) => {
-  if (!id || !win || win.isDestroyed()) return;
+  if (!id) return;
+  if (!win || win.isDestroyed()) {
+    // 主窗口已关闭：兜底重建，待页面加载完成后再投递演员详情导航
+    createWindow();
+    win.webContents.once('did-finish-load', () => {
+      if (win && !win.isDestroyed()) win.webContents.send('app:open-character', String(id));
+    });
+    return;
+  }
   focusMainWindow();
   win.webContents.send('app:open-character', String(id));
 });
