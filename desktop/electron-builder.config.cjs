@@ -86,12 +86,10 @@ module.exports = defineConfig({
   dmg: {
     artifactName: '红果短剧-${version}-${arch}.${ext}'
   },
-  // GitHub Release 发布目标：配合 tag 推送 + GH_TOKEN 自动上传安装包
-  publish: [
-    {
-      provider: 'github',
-      owner: 'bainano',
-      repo: 'HongGuo-PC'
-    }
-  ]
+  // 说明：这里**不配置** publish。
+  // electron-builder 在 CI 环境检测到 publish 配置时会自动尝试发布，需要 GH_TOKEN，
+  // 令牌缺失会直接让构建失败（GitHub Personal Access Token is not set）。
+  // 本项目的发布统一交给 GitHub Actions 的 release job（softprops/action-gh-release），
+  // 它使用 Actions 内置的 GITHUB_TOKEN，构建侧只负责出包。
+  publish: null
 });
