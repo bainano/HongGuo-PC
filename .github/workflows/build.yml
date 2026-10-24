@@ -1,13 +1,9 @@
 name: Build & Release
 
-# 触发：
-# - 推送到 main/master：只构建并上传产物（不发布）
-# - 推送 tag（v*）：构建 + 自动发布 GitHub Release（含全部安装包）
-# - 手动 workflow_dispatch：随时可在 Actions 页面手动构建
+# 触发：仅手动（Actions 页面 workflow_dispatch 一键启动）。
+# 正式发布由维护者在本机构建并直接发布 Release，不由推送自动触发。
+# 需要产出 macOS 安装包时（只能在 macOS runner 上构建），在 Actions 页面手动运行本工作流即可。
 on:
-  push:
-    branches: [main, master]
-    tags: ['v*']
   workflow_dispatch:
 
 # 同一 ref 的多次构建自动取消，避免重复占用 runner

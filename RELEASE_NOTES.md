@@ -9,7 +9,8 @@
 
 | 平台 | 文件 |
 | --- | --- |
-| Windows 64 位 | `红果短剧-Setup-1.0.0.exe` |
+| Windows 64 位（安装版） | `红果短剧-Setup-1.0.0.exe` |
+| Windows 64 位（免安装便携版） | `红果短剧-1.0.0-portable-win-x64.zip` |
 | macOS Intel | `红果短剧-1.0.0-x64.dmg` |
 | macOS Apple Silicon（M 系列） | `红果短剧-1.0.0-arm64.dmg` |
 

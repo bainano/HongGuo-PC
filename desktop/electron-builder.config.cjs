@@ -50,8 +50,12 @@ module.exports = defineConfig({
     }
   ],
   win: {
-    target: ['nsis'],
+    // nsis：安装器（自动提权）；zip：免安装便携版（解压即用）
+    target: ['nsis', 'zip'],
     icon: 'icon.ico'
+  },
+  zip: {
+    artifactName: '红果短剧-${version}-portable-win-${arch}.${ext}'
   },
   nsis: {
     oneClick: false,
