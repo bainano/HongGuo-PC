@@ -126,8 +126,8 @@ jobs:
           pick() { find artifacts -type f -name "$1" | head -n 1; }
           copy() { src="$(pick "$1")"; if [ -z "$src" ]; then echo "MISSING: $1"; exit 1; fi; cp "$src" "$2"; echo "OK: $(basename "$2")"; }
           copy "*Setup-$V.exe"            "release-files/HongGuo-PC-Setup-$V.exe"
-          copy "*Setup-$V-win-x64.exe"    "release-files/HongGuo-PC-Setup-$V-win-x64.exe"
-          copy "*Setup-$V-win-arm64.exe"  "release-files/HongGuo-PC-Setup-$V-win-arm64.exe"
+          copy "*Setup-$V-x64.exe"        "release-files/HongGuo-PC-Setup-$V-win-x64.exe"
+          copy "*Setup-$V-arm64.exe"      "release-files/HongGuo-PC-Setup-$V-win-arm64.exe"
           copy "*-$V-win.zip"             "release-files/HongGuo-PC-$V-win-x64.zip"
           copy "*-$V-arm64-win.zip"       "release-files/HongGuo-PC-$V-win-arm64.zip"
           copy "*-$V-x64.dmg"             "release-files/HongGuo-PC-$V-x64.dmg"
