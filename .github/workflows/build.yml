@@ -50,13 +50,17 @@ jobs:
 
       - name: List Windows artifacts
         working-directory: desktop
-        run: Get-ChildItem dist-electron | Select-Object Name, Length
+        run: Get-ChildItem dist-electron -File | Select-Object Name, Length
 
       - name: Upload Windows artifacts
         uses: actions/upload-artifact@v4
         with:
           name: HongGuo-PC-Windows
-          path: desktop/dist-electron/*.{exe,zip}
+          # 注意：upload-artifact 不支持 *.{exe,zip} 这种花括号通配（会匹配不到任何文件），
+          # 必须写成多行路径
+          path: |
+            desktop/dist-electron/*.exe
+            desktop/dist-electron/*.zip
           if-no-files-found: error
 
   build-macos:
