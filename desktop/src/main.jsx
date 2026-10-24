@@ -11,20 +11,39 @@ import './styles/detail.css';
 import './styles/player.css';
 import './styles/search.css';
 
-// 启动过渡图：首屏内容就绪（App 调用 __hgHideSplash）后立即淡出移除；
-// 显示时长完全匹配真实加载耗时，不设最短展示限制
+// 启动过渡图：与主进程先加载的 loading.html 使用同一套视觉（#131414 + 320px logo），
+// 应用页面接管后由 App 在首屏内容就绪时调用 __hgHideSplash 淡出。
+// 最短展示 240ms，避免数据命中缓存时启动图一闪而过。
 const splashEl = document.getElementById('hg-splash');
-let splashHidden = false;
-window.__hgHideSplash = () => {
-  if (splashHidden || !splashEl) return;
-  splashHidden = true;
-  splashEl.classList.add('hg-splash-hide');
-  splashEl.addEventListener('transitionend', () => splashEl.remove(), { once: true });
-  // 兜底：过渡未触发时强制移除
-  setTimeout(() => splashEl.parentNode && splashEl.remove(), 600);
+const splashStartAt = performance.now();
+const MIN_SPLASH_MS = 240;
+let splashHiding = false;
+let splashRemoved = false;
+
+const removeSplash = () => {
+  if (splashRemoved || !splashEl) return;
+  splashRemoved = true;
+  splashEl.remove();
 };
-// 兜底：8s 内无论内容是否就绪都关闭过渡图，避免极端情况下永久遮挡
-setTimeout(() => window.__hgHideSplash(), 8000);
+
+window.__hgHideSplash = () => {
+  if (splashHiding || splashRemoved || !splashEl) return;
+  splashHiding = true;
+  const wait = Math.max(0, MIN_SPLASH_MS - (performance.now() - splashStartAt));
+  setTimeout(() => {
+    if (!splashEl.isConnected) {
+      splashRemoved = true;
+      return;
+    }
+    splashEl.classList.add('hg-splash-hide');
+    splashEl.addEventListener('transitionend', removeSplash, { once: true });
+    // 兜底：过渡未触发（如窗口被隐藏）时强制移除
+    setTimeout(removeSplash, 600);
+  }, wait);
+};
+
+// 兜底：极端情况下（接口长时间无响应）也必须让启动图退出，避免永久遮挡首页
+setTimeout(() => window.__hgHideSplash(), 6000);
 
 createRoot(document.getElementById('root')).render(
   <React.StrictMode>

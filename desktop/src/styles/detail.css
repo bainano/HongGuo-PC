@@ -321,23 +321,20 @@ button.dt-hero-tag-link:hover {
   width: 100%;
 }
 
-/* 收起态：仅显示第一行（17 集 + 展开箭头占第 18 格） */
+/* 收起态：只露出第一行（行高 56px），其余行被容器高度裁切。
+   注意：不能用 grid-template-rows 约束隐式行——内容换行后隐式行仍是 auto 高度，
+   容器会随内容撑高，看起来就“永远是展开状态”。 */
 .dt-episode-grid:not(.dt-episode-grid-expanded) {
-  grid-template-rows: 56px;
+  max-height: 56px;
   overflow: hidden;
 }
 
-.dt-episode-grid:not(.dt-episode-grid-expanded) .dt-episode-cell:nth-child(n + 18) {
-  display: none;
-}
-
 .dt-episode-grid-expanded {
-  height: auto;
+  max-height: none;
   overflow: visible;
 }
 
-.dt-episode-cell,
-.dt-episode-toggle {
+.dt-episode-cell {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -355,15 +352,48 @@ button.dt-hero-tag-link:hover {
   transition: background 0.15s ease-out;
 }
 
-.dt-episode-cell:hover,
-.dt-episode-toggle:hover {
+.dt-episode-cell:hover {
   background: hsla(0, 0%, 100%, 0.12);
+}
+
+/* 展开/收起按钮：放在网格外，避免收起时被裁切而无法再次展开 */
+.dt-episode-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  width: max-content;
+  max-width: 100%;
+  height: 36px;
+  margin: 14px auto 0;
+  padding: 0 16px;
+  border: 1px solid hsla(0, 0%, 100%, 0.16);
+  border-radius: 18px;
+  background: transparent;
+  color: hsla(0, 0%, 100%, 0.68);
+  font-size: 14px;
+  line-height: 1;
+  cursor: pointer;
+  transition: background 0.15s ease-out, border-color 0.15s ease-out,
+    color 0.15s ease-out;
+}
+
+.dt-episode-toggle:hover,
+.dt-episode-toggle-open {
+  border-color: hsla(0, 0%, 100%, 0.3);
+  background: hsla(0, 0%, 100%, 0.08);
+  color: #fff;
+}
+
+.dt-episode-toggle:focus-visible {
+  outline: 2px solid hsla(0, 0%, 100%, 0.6);
+  outline-offset: 2px;
 }
 
 .dt-episode-arrow {
   display: block;
-  width: 24px;
-  height: 24px;
+  width: 18px;
+  height: 18px;
   transition: transform 0.2s ease-out;
 }
 

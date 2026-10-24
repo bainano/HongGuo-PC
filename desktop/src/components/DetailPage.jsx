@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { fetchSeries } from '../api.js';
 import SeriesCard from './SeriesCard.jsx';
 import { ScoreIcon, HeatIcon, PlayIcon } from './Icons.jsx';
@@ -60,7 +60,10 @@ export default function DetailPage({ seriesId, onOpen, onOpenCharacter, onPlay, 
   const [data, setData] = useState(null);
   const [error, setError] = useState(null);
   const [descOpen, setDescOpen] = useState(false);
+  // 选集默认收起；仅当分集确实超出一行（受窗口宽度影响）时才显示展开/收起按钮
   const [episodesOpen, setEpisodesOpen] = useState(false);
+  const [episodeOverflow, setEpisodeOverflow] = useState(false);
+  const episodeGridRef = useRef(null);
 
   useEffect(() => {
     let alive = true;
@@ -68,6 +71,7 @@ export default function DetailPage({ seriesId, onOpen, onOpenCharacter, onPlay, 
     setError(null);
     setDescOpen(false);
     setEpisodesOpen(false);
+    setEpisodeOverflow(false);
     fetchSeries(seriesId)
       .then((d) => {
         if (alive) setData(d);
@@ -79,6 +83,28 @@ export default function DetailPage({ seriesId, onOpen, onOpenCharacter, onPlay, 
       alive = false;
     };
   }, [seriesId]);
+
+  // 测量分集区域是否超出一行（收起态 max-height 为一行高度）：
+  // 只有真正溢出时才渲染展开按钮，展开后按钮保留，点击收起会重新测量。
+  useEffect(() => {
+    const el = episodeGridRef.current;
+    if (!el || !data || episodesOpen) return;
+    const measure = () => {
+      setEpisodeOverflow(el.scrollHeight > el.clientHeight + 1);
+    };
+    measure();
+    let ro = null;
+    if (typeof ResizeObserver !== 'undefined') {
+      ro = new ResizeObserver(measure);
+      ro.observe(el);
+    } else {
+      window.addEventListener('resize', measure);
+    }
+    return () => {
+      if (ro) ro.disconnect();
+      else window.removeEventListener('resize', measure);
+    };
+  }, [data, episodesOpen]);
 
   if (error) {
     return (
@@ -222,15 +248,16 @@ export default function DetailPage({ seriesId, onOpen, onOpenCharacter, onPlay, 
           </div>
         </section>
 
-        {/* 分集格子：默认一行，超出折叠 + 展开箭头 */}
+        {/* 分集格子：默认收起为一行；超出一行时才显示展开/收起按钮。
+            按钮放在网格外，避免收起时被容器裁切导致“点了没反应”。 */}
         {episodes.length > 0 && (
           <div className="dt-episode-container">
             <div
+              ref={episodeGridRef}
+              id="dt-episode-grid"
               className={
                 'dt-episode-grid' +
-                (episodesOpen || episodes.length <= 18
-                  ? ' dt-episode-grid-expanded'
-                  : '')
+                (episodesOpen ? ' dt-episode-grid-expanded' : '')
               }
             >
               {episodes.map((ep) => (
@@ -244,33 +271,40 @@ export default function DetailPage({ seriesId, onOpen, onOpenCharacter, onPlay, 
                   </button>
                 </Tip>
               ))}
-              {episodes.length > 18 && (
-                <button
-                  type="button"
-                  className="dt-episode-toggle"
-                  onClick={() => setEpisodesOpen((v) => !v)}
-                  aria-label={episodesOpen ? '收起分集' : '展开全部分集'}
-                >
-                  <svg
-                    className={
-                      'dt-episode-arrow' +
-                      (episodesOpen ? ' dt-episode-arrow-open' : '')
-                    }
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    aria-hidden="true"
-                  >
-                    <path
-                      d="M6 9.5 12 15.5 18 9.5"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    />
-                  </svg>
-                </button>
-              )}
             </div>
+            {episodeOverflow && (
+              <button
+                type="button"
+                className={
+                  'dt-episode-toggle' +
+                  (episodesOpen ? ' dt-episode-toggle-open' : '')
+                }
+                onClick={() => setEpisodesOpen((v) => !v)}
+                aria-expanded={episodesOpen}
+                aria-controls="dt-episode-grid"
+              >
+                <span className="dt-episode-toggle-text">
+                  {episodesOpen ? '收起分集' : `展开全部 ${episodes.length} 集`}
+                </span>
+                <svg
+                  className={
+                    'dt-episode-arrow' +
+                    (episodesOpen ? ' dt-episode-arrow-open' : '')
+                  }
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  aria-hidden="true"
+                >
+                  <path
+                    d="M6 9.5 12 15.5 18 9.5"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </svg>
+              </button>
+            )}
           </div>
         )}
 
