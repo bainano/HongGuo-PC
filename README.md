@@ -1,8 +1,29 @@
-# 红果短剧（HongGuo-PC）
+<div align="center">
 
-> 好看的短剧尽在红果短剧
+<img src="docs/assets/logo.png" alt="红果短剧" width="128" height="128" />
 
-红果短剧的 PC 桌面客户端：Windows 与 macOS 原生窗口，内置本地内容服务，打开即用，无需配置。
+<h1>红果短剧（HongGuo-PC）</h1>
+
+<p><b>好看的短剧尽在红果短剧</b></p>
+
+<p>红果短剧的 PC 桌面客户端：Windows 与 macOS 原生窗口，内置本地内容服务，打开即用，无需配置。</p>
+
+<p>
+  <a href="https://github.com/bainano/HongGuo-PC/releases/latest"><img alt="版本" src="https://img.shields.io/github/v/release/bainano/HongGuo-PC?style=flat-square&amp;label=%E7%89%88%E6%9C%AC&amp;color=FF6A2B"></a>
+  <img alt="支持平台" src="https://img.shields.io/badge/%E5%B9%B3%E5%8F%B0-Windows%2010%2F11%20%7C%20macOS-0078D6?style=flat-square&amp;logo=windows&amp;logoColor=white">
+  <a href="https://github.com/bainano/HongGuo-PC/actions/workflows/build.yml"><img alt="构建状态" src="https://img.shields.io/github/actions/workflow/status/bainano/HongGuo-PC/build.yml?branch=main&amp;style=flat-square&amp;label=%E6%9E%84%E5%BB%BA"></a>
+  <a href="LICENSE"><img alt="许可证" src="https://img.shields.io/github/license/bainano/HongGuo-PC?style=flat-square&amp;label=%E8%AE%B8%E5%8F%AF%E8%AF%81&amp;color=3DA639"></a>
+</p>
+
+<p>
+  <img alt="Electron" src="https://img.shields.io/badge/Electron-45-47848F?style=flat-square&amp;logo=electron&amp;logoColor=white">
+  <img alt="React" src="https://img.shields.io/badge/React-18-61DAFB?style=flat-square&amp;logo=react&amp;logoColor=white">
+  <a href="https://github.com/bainano/HongGuo-PC/stargazers"><img alt="Stars" src="https://img.shields.io/github/stars/bainano/HongGuo-PC?style=flat-square&amp;label=stars&amp;color=F5C518&amp;logo=github&amp;logoColor=white"></a>
+</p>
+
+</div>
+
+## 功能特性
 
 - **首页**：推荐栏目 + 横幅轮播，剧集海报墙
 - **分类**：真人剧 / 漫剧 / AI 剧
