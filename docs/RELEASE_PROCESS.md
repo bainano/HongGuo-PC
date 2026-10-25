@@ -257,6 +257,7 @@ req.add_header('Authorization', 'Bearer ' + TOKEN)
 7. **本机 `curl.exe`** 访问 GitHub API 需要 `--ssl-no-revoke`。
 8. **推送顺序**：先分支后标签；改过代码要重打标签时，`git tag -f` + `git push -f` 同步更新。
 9. **调试打包版**用 `--remote-debugging-port`，端口 9222 常被 Edge 占用，换 9333 等；判窗口是否被置顶可用 `GetWindowLongPtr(GWL_EXSTYLE=-20) & 0x8 (WS_EX_TOPMOST)`。
+10. **平台范围已定（决策，勿擅自改动）**：**Windows + macOS 双平台都保留**，每次固定 7 个资产（见第 3 节）。Windows 侧只有 x64 与 ARM64（Electron 45 起上游不再发布 `win32-ia32`，**不出 32 位包**，且 Electron 45 不支持 Windows 7/8）；macOS 侧 x64 + arm64 两个 dmg 由 `macos-14` runner 产出。任何试图删除 macOS job、删 `mac` 配置段、或把资产清单减到 5 项的改动都视为破坏发布规范，须先经用户确认。
 
 ---
 
