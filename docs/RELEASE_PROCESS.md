@@ -27,13 +27,15 @@
 - 类型：GitHub Personal Access Token
   - classic：勾选 `repo`、`workflow`
   - 或 fine-grained：作用于 `bainano/HongGuo-PC`，权限 `Contents: Read and write`、`Metadata: Read`、`Actions: Read and write`
-- 存放位置（**任选其一，禁止写入仓库**）：
-  - 本机文件：`C:\hg-out\gh_token.txt`（UTF-8 无 BOM、无换行，600 权限）
-  - 环境变量：`HG_GITHUB_TOKEN`
-  - 或用仓库自带的 OAuth 代理工具获取（推荐，不用手写令牌）：
-    `node tools/github-oauth-proxy/github-oauth-proxy.mjs token`，
-    首次使用时运行 `login`（Windows 双击 `tools/github-oauth-proxy/start.cmd`），
-    在浏览器里点一次授权即可；令牌以 AES-256-GCM 加密存放在 `~/.hongguo/`，见该目录 README
+- 存放位置（**禁止写入仓库**）：
+  - **首选：本机 OAuth 代理工具（已全局安装）**
+    - 取令牌：`hg-oauth token`（不在任何仓库里，工具在 `~/Documents/tools`）
+    - 首次/重新获取：`hg-oauth login`（浏览器点一次授权）
+    - 令牌以 AES-256-GCM 加密存放在 `~/.hongguo/`，权限范围 `read:user, repo, workflow`，**具备推送与 Actions 权限**，已实测可直接 `git push`
+    - 详见 `~/Documents/tools/github-oauth-proxy/README.md`
+  - 备选 1：环境变量 `HG_GITHUB_TOKEN`
+  - 备选 2：本机文件 `C:\hg-out\gh_token.txt`（UTF-8 无 BOM、无换行，600 权限）。
+    注意该目录会被系统/安全软件不定期清空，用前先确认存在；文件缺失时改用上面的 `hg-oauth token`（PAT classic 勾选 `repo`、`workflow`）
 - 硬性规则：
   1. **令牌明文不得出现在任何入库文件中**（README、文档、代码、commit message、Release 正文都不行）——GitHub 会扫描到并自动吊销
   2. 本文档只说明「在哪用、怎么用」，不保存令牌明文
@@ -53,14 +55,20 @@
 ### 1.3 读取令牌的标准片段
 
 ```powershell
-# PowerShell：从本机文件读取（不要 echo 出来）
-$TOKEN = [System.IO.File]::ReadAllText('C:\hg-out\gh_token.txt')
+# PowerShell：从 OAuth 代理取令牌（推荐，不要 echo 出来）
+# 工具输出只有一行明文令牌；前面那行 [tls] 提示不属于令牌，用 ^gho_ 过滤掉
+$TOKEN = (hg-oauth token | Select-String -Pattern '^gho_' | ForEach-Object { $_.Line }).Trim()
+# 备选：从本机文件读取
+# $TOKEN = [System.IO.File]::ReadAllText('C:\hg-out\gh_token.txt')
 $HEADERS = @{ Authorization = "Bearer $TOKEN"; Accept = 'application/vnd.github+json'; 'User-Agent' = 'hongguo-release' }
 ```
 
 ```python
-# Python：从文件读取，上传/调用 API（推荐，能正确处理 UTF-8 与二进制）
-TOKEN = io.open(r'C:\hg-out\gh_token.txt', encoding='utf-8').read().strip()
+# Python：调用工具子进程取令牌（推荐），或从文件读取
+import subprocess, io, os, urllib.request
+
+TOKEN = subprocess.run(['hg-oauth', 'token'], capture_output=True, text=True).stdout.strip()
+# 备选：TOKEN = io.open(r'C:\hg-out\gh_token.txt', encoding='utf-8').read().strip()
 req = urllib.request.Request(url, data=data, method='POST')
 req.add_header('Authorization', 'Bearer ' + TOKEN)
 ```
@@ -134,7 +142,7 @@ req.add_header('Authorization', 'Bearer ' + TOKEN)
 - **输入**：本地提交与标签
 - **操作**（令牌使用位置 #1）：
   ```powershell
-  $TOKEN = [System.IO.File]::ReadAllText('C:\hg-out\gh_token.txt')
+  $TOKEN = (hg-oauth token | Select-String -Pattern '^gho_' | ForEach-Object { $_.Line }).Trim()
   git push "https://bainano:$TOKEN@github.com/bainano/HongGuo-PC.git" main:main
   git push "https://bainano:$TOKEN@github.com/bainano/HongGuo-PC.git" v1.0.1
   ```
@@ -265,7 +273,7 @@ req.add_header('Authorization', 'Bearer ' + TOKEN)
 
 ```powershell
 # 读取令牌与请求头
-$TOKEN = [System.IO.File]::ReadAllText('C:\hg-out\gh_token.txt')
+$TOKEN = (hg-oauth token | Select-String -Pattern '^gho_' | ForEach-Object { $_.Line }).Trim()
 $HEADERS = @{ Authorization = "Bearer $TOKEN"; Accept = 'application/vnd.github+json'; 'User-Agent' = 'hongguo-release' }
 
 # 查最新 Release
