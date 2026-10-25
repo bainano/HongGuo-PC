@@ -49,3 +49,6 @@ detail/
 
 # Legacy probe scripts inside the desktop app (reference only)
 desktop/legacy/
+
+# ===== Tooling artifacts: browser automation 快照，非项目内容 =====
+.playwright-cli/

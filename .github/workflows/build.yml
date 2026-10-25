@@ -23,12 +23,14 @@ jobs:
     runs-on: windows-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v7
         with:
-          node-version: 20
+          # Node 20 已于 2026-04 EOL，GitHub 自 2026-06-16 起默认 Node 24、2026-09-23 起不再提供 Node 20，
+          # 因此统一用 24（与本机开发用的 v24.18.1 一致）。Electron 45 要求 Node >= 22.12，也满足。
+          node-version: 24
           cache: npm
           cache-dependency-path: |
             desktop/package-lock.json
@@ -53,7 +55,7 @@ jobs:
         run: Get-ChildItem dist-electron -File | Select-Object Name, Length
 
       - name: Upload Windows artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: HongGuo-PC-Windows
           # 注意：upload-artifact 不支持 *.{exe,zip} 这种花括号通配（会匹配不到任何文件），
@@ -65,15 +67,19 @@ jobs:
 
   build-macos:
     name: macOS (x64 + arm64)
-    runs-on: macos-14
+    # macos-14 镜像将于 2026-11-02 退役（10 月已有多次 brownout 故意让任务失败），
+    # 改用同为 Apple Silicon (arm64) 的 macos-15，仍然一台机器同时出 x64 + arm64 两个 dmg。
+    runs-on: macos-15
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v7
         with:
-          node-version: 20
+          # Node 20 已于 2026-04 EOL，GitHub 自 2026-06-16 起默认 Node 24、2026-09-23 起不再提供 Node 20，
+          # 因此统一用 24（与本机开发用的 v24.18.1 一致）。Electron 45 要求 Node >= 22.12，也满足。
+          node-version: 24
           cache: npm
           cache-dependency-path: |
             desktop/package-lock.json
@@ -88,7 +94,7 @@ jobs:
         run: npm install --no-audit --no-fund
 
       # 一台 Apple Silicon 机器上同时产出 x64 与 arm64 两个 dmg
-      # （早期拆成 macos-13 + macos-14 两个任务时，Intel runner 长时间排队等不到机器）
+      # （早期拆成 macos-13 + macos-14 两个任务时，Intel runner 长时间排队等不到机器；现用 macos-15）
       - name: Build & package macOS
         working-directory: desktop
         run: npm run pack:mac
@@ -98,7 +104,7 @@ jobs:
         run: ls -lh dist-electron
 
       - name: Upload macOS artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: HongGuo-PC-macOS
           path: desktop/dist-electron/*.dmg
@@ -111,10 +117,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Download artifacts
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           path: artifacts
 
@@ -160,7 +166,7 @@ jobs:
           cp "$SRC" release-notes.md
 
       - name: Create Release
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@v3
         with:
           # 不指定 name 时默认用标签名，这里显式带上产品名
           name: 红果短剧 ${{ github.ref_name }}

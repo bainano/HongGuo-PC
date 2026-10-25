@@ -169,7 +169,7 @@ req.add_header('Authorization', 'Bearer ' + TOKEN)
   1. `release` job 下载全部 artifacts
   2. 按第 3 节规范名重命名（中文原名 → ASCII 规范名），逐个校验，数量必须等于 7，否则失败
   3. 按版本定位发布说明 `docs/releases/v<版本>.md`（找不到就直接失败，避免发空正文），
-     再交给 `softprops/action-gh-release@v2` 以它为正文创建（非草稿）Release 并上传 7 个资产
+     再交给 `softprops/action-gh-release@v3` 以它为正文创建（非草稿）Release 并上传 7 个资产
 - **输出**：`https://github.com/bainano/HongGuo-PC/releases/tag/v1.0.1`
 - **判据**：Release 存在、`draft=false`、资产数 = 7
 
@@ -257,7 +257,7 @@ req.add_header('Authorization', 'Bearer ' + TOKEN)
 ## 6. 已踩过的坑（必须遵守）
 
 1. **资产名必须 ASCII**：GitHub 上传接口会吞掉中文，构建产物的中文名必须在 release job 里重命名后再上传。
-2. **macOS 包只能由 GitHub Actions 产出**：本机 Windows 无法构建 dmg；不要再用 `macos-13`（Intel runner 长时间排队等不到机器），统一用 `macos-14` 一台机器同时出 x64 + arm64。
+2. **macOS 包只能由 GitHub Actions 产出**：本机 Windows 无法构建 dmg；不要再用的 runner 有两个：`macos-13`（Intel runner 长时间排队等不到机器，已退役）、`macos-14`（镜像 2026-11-02 退役，10 月有多次 brownout 故意让任务失败）。当前统一用 `macos-15`（arm64）一台机器同时出 x64 + arm64；确实需要原生 Intel x64 时再考虑 `macos-15-intel` / `macos-26-intel`。
 3. **electron-builder 没有顶层 `zip` 配置段**：写 `zip: {...}` 会被 schema 校验拒绝（`unknown property 'zip'`），zip 产物只能用默认命名，最终在 release job 里改成规范名。
 4. **多架构 NSIS 产物名必须带 `${arch}`**：否则三个安装器互相覆盖。
 5. **本机打包前先关掉正在运行的应用**（含它拉起的后端子进程），否则解包时 `EPERM: operation not permitted, unlink d3dcompiler_47.dll`。
@@ -265,7 +265,8 @@ req.add_header('Authorization', 'Bearer ' + TOKEN)
 7. **本机 `curl.exe`** 访问 GitHub API 需要 `--ssl-no-revoke`。
 8. **推送顺序**：先分支后标签；改过代码要重打标签时，`git tag -f` + `git push -f` 同步更新。
 9. **调试打包版**用 `--remote-debugging-port`，端口 9222 常被 Edge 占用，换 9333 等；判窗口是否被置顶可用 `GetWindowLongPtr(GWL_EXSTYLE=-20) & 0x8 (WS_EX_TOPMOST)`。
-10. **平台范围已定（决策，勿擅自改动）**：**Windows + macOS 双平台都保留**，每次固定 7 个资产（见第 3 节）。Windows 侧只有 x64 与 ARM64（Electron 45 起上游不再发布 `win32-ia32`，**不出 32 位包**，且 Electron 45 不支持 Windows 7/8）；macOS 侧 x64 + arm64 两个 dmg 由 `macos-14` runner 产出。任何试图删除 macOS job、删 `mac` 配置段、或把资产清单减到 5 项的改动都视为破坏发布规范，须先经用户确认。
+11. **Actions 运行时已切到 Node 24（2026-10 起强制）**：Node 20 已于 2026-04 EOL，GitHub 从 2026-06-16 起默认用 Node 24 跑 JS Action，2026-09-23 起 runner 里不再有 Node 20。因此 `.github/workflows/build.yml` 固定用：`actions/checkout@v7`、`actions/setup-node@v7`（`node-version: 24`）、`actions/upload-artifact@v7`、`actions/download-artifact@v8`、`softprops/action-gh-release@v3`（v3 起运行时就是 Node 24）。继续用 v2/v4 只会每步刷一条 "Node.js 20 is deprecated... forced to run on Node.js 24" 警告，并且随时可能因不兼容而直接失败。
+12. **平台范围已定（决策，勿擅自改动）**：**Windows + macOS 双平台都保留**，每次固定 7 个资产（见第 3 节）。Windows 侧只有 x64 与 ARM64（Electron 45 起上游不再发布 `win32-ia32`，**不出 32 位包**，且 Electron 45 不支持 Windows 7/8）；macOS 侧 x64 + arm64 两个 dmg 由 `macos-15` runner 产出。任何试图删除 macOS job、删 `mac` 配置段、或把资产清单减到 5 项的改动都视为破坏发布规范，须先经用户确认。
 
 ---
 
