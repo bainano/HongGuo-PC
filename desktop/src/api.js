@@ -27,7 +27,8 @@ async function probe(base) {
     if (!res.ok) return false;
     // 旧版打包后端（如 D:\hongguotv-web-win-x64）/health 与本后端完全一致，
     // 但详情接口缺 related/hot/celebrities/social.reviews 字段；
-    // 官方原版（8788）缺演员页排序字段 createTime。
+    // 官方原版（8788）缺演员页排序字段 createTime；
+    // 更老的版本没有 /api/banners，连上去首页 Banner 推荐区会整块消失。
     // 必须校验能力标记，否则误连旧后端会导致详情页/播放页板块消失、演员页排序错乱
     const data = await res.json().catch(() => null);
     return Boolean(
@@ -35,7 +36,8 @@ async function probe(base) {
         data.ok &&
         data.capabilities &&
         data.capabilities.detailExtras &&
-        data.capabilities.characterSortFields
+        data.capabilities.characterSortFields &&
+        data.capabilities.homeBanner
     );
   } catch {
     return false;

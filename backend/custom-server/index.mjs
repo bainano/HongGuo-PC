@@ -217,54 +217,72 @@ const vidToSeriesMap = new Map();
 
 
 // 1. 获取官方首页数据 (含 Banner + 四大排行榜基础池)
+// 同刷新周期内的并发请求合并为一次抓取；单次失败自动重试一次。
+// 抓不到时返回上一次快照（哪怕已过期），绝不把空结果当作成功数据返回，
+// 否则接口层一旦缓存空列表，首页 Banner 与四大专区会整块消失。
+let homeInflight = null;
 async function fetchOfficialHome() {
   const now = Date.now();
   if (cacheHome.timestamp && now - cacheHome.timestamp < 10 * 60 * 1000) {
     return cacheHome;
   }
+  if (homeInflight) return homeInflight;
 
-  try {
-    const res = await axios.get("https://hongguoduanju.com", {
-      timeout: 8000,
-      headers: { "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/120.0.0.0" }
-    });
+  homeInflight = (async () => {
+    for (let attempt = 1; attempt <= 2; attempt++) {
+      try {
+        const res = await axios.get("https://hongguoduanju.com", {
+          timeout: 10000,
+          headers: { "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/120.0.0.0" }
+        });
 
-    const match = res.data.match(/_ROUTER_DATA\s*=\s*(\{.*?\});/s);
-    if (match) {
-      const data = JSON.parse(match[1]);
-      const page = data?.loaderData?.page || {};
-      cacheHome = {
-        timestamp: now,
-        banners: (page.bannerList || []).map((b) => ({
-          id: String(b.series_id),
-          title: b.series_name,
-          cover: b.series_cover,
-          backgroundCover: b.background_cover_pc,
-          titleImage: b.title_link_pc,
-          description: b.series_intro,
-          tags: (b.tags || []).join("/"),
-        })),
-        sections: (page.homeSections || []).map((s) => ({
-          type: s.tab_type,
-          name: s.tab_name,
-          items: (s.video_list || []).map((v) => ({
-            id: String(v.series_id),
-            title: v.series_title,
-            cover: v.series_cover,
-            badge: v.episode_right_text || `全${v.episode_cnt}集`,
-            description: v.series_intro || "",
-            // 首页卡片与分类页一致：显示题材标签（官方 category_list），不再显示“栏目名 · 排名第x名”
-            tags: (v.category_list || []).map((c) => c.name).join("/"),
-            rank: v.rank || 1,
-          })),
-        })),
-      };
-      return cacheHome;
+        const match = res.data.match(/_ROUTER_DATA\s*=\s*(\{.*?\});/s);
+        if (match) {
+          const data = JSON.parse(match[1]);
+          const page = data?.loaderData?.page || {};
+          cacheHome = {
+            timestamp: now,
+            banners: (page.bannerList || []).map((b) => ({
+              id: String(b.series_id),
+              title: b.series_name,
+              cover: b.series_cover,
+              backgroundCover: b.background_cover_pc,
+              titleImage: b.title_link_pc,
+              description: b.series_intro,
+              tags: (b.tags || []).join("/"),
+            })),
+            sections: (page.homeSections || []).map((s) => ({
+              type: s.tab_type,
+              name: s.tab_name,
+              items: (s.video_list || []).map((v) => ({
+                id: String(v.series_id),
+                title: v.series_title,
+                cover: v.series_cover,
+                badge: v.episode_right_text || `全${v.episode_cnt}集`,
+                description: v.series_intro || "",
+                // 首页卡片与分类页一致：显示题材标签（官方 category_list），不再显示“栏目名 · 排名第x名”
+                tags: (v.category_list || []).map((c) => c.name).join("/"),
+                rank: v.rank || 1,
+              })),
+            })),
+          };
+          return cacheHome;
+        }
+      } catch (err) {
+        console.error(`[Official Home Error] attempt ${attempt}:`, err.message);
+      }
+      // 第一次失败稍等再试：多数是冷启动瞬时的 DNS / TLS 抖动
+      if (attempt === 1) await new Promise((r) => setTimeout(r, 600));
     }
-  } catch (err) {
-    console.error("[Official Home Error]:", err.message);
-  }
-  return cacheHome;
+    console.warn(
+      "[Official Home] 抓取失败，沿用上一次快照：",
+      cacheHome.timestamp ? new Date(cacheHome.timestamp).toISOString() : "(无快照)"
+    );
+    return cacheHome;
+  })().finally(() => {
+    homeInflight = null;
+  });
+  return homeInflight;
 }
 
 // 2. 抓取官方分类短剧列表 (带题材路由与分页)
@@ -580,7 +598,13 @@ const server = http.createServer(async (req, res) => {
       // 能力标记：详情接口含 related/hot/celebrities/social.reviews 等扩展字段。
       // 旧版打包后端与本服务 /health 字段完全一致但详情缺字段，
       // 桌面端探测端口时以此区分，避免误连旧后端导致板块缺失。
-      capabilities: { detailExtras: true, characterSortFields: true },
+      capabilities: {
+        detailExtras: true,
+        characterSortFields: true,
+        // 本版本提供 /api/banners（首页大轮播）。旧版打包后端没有该接口，
+        // 桌面端按能力探测端口时据此跳过，避免连到缺少 Banner 的旧服务
+        homeBanner: true,
+      },
       playback: {
         engineLoaded,
         // 只有确认近期成功过，才敢说可播
@@ -617,20 +641,28 @@ const server = http.createServer(async (req, res) => {
     // 2. 官方大轮播 Banner API
     if (pathname === "/api/banners") {
       const cached = hotLruCache.get("hot:banners");
-      if (cached) return json(res, cached, 200, { "X-Cache": "HIT" }, reqStart);
+      // 只认非空快照：抓取失败时的空列表若被缓存，会把结果钉死 300s
+      if (cached && Array.isArray(cached.banners) && cached.banners.length > 0) {
+        return json(res, cached, 200, { "X-Cache": "HIT" }, reqStart);
+      }
       const data = await fetchOfficialHome();
-      const payload = { banners: data.banners };
-      hotLruCache.set("hot:banners", payload);
+      const payload = { banners: data.banners || [] };
+      // 空结果不写缓存：否则一次网络抖动会让首页 Banner 整块消失，
+      // 且必须等 TTL 过期才恢复（打包版冷启动时最容易踩到，开发模式不易复现）
+      if (payload.banners.length > 0) hotLruCache.set("hot:banners", payload);
       return json(res, payload, 200, { "X-Cache": "MISS" }, reqStart);
     }
 
     // 2.1 官方首页专区列表 (GET /api/sections)
     if (pathname === "/api/sections") {
       const cached = hotLruCache.get("hot:sections");
-      if (cached) return json(res, cached, 200, { "X-Cache": "HIT" }, reqStart);
+      if (cached && Array.isArray(cached.sections) && cached.sections.length > 0) {
+        return json(res, cached, 200, { "X-Cache": "HIT" }, reqStart);
+      }
       const data = await fetchOfficialHome();
-      const payload = { sections: data.sections };
-      hotLruCache.set("hot:sections", payload);
+      const payload = { sections: data.sections || [] };
+      // 同 /api/banners：空列表不入缓存，避免整个首页被空结果钉住
+      if (payload.sections.length > 0) hotLruCache.set("hot:sections", payload);
       return json(res, payload, 200, { "X-Cache": "MISS" }, reqStart);
     }
 
@@ -699,7 +731,9 @@ const server = http.createServer(async (req, res) => {
     // 5.2 兼容旧版全量四大排行榜 (GET /api/ranks)
     if (pathname === "/api/ranks") {
       const cached = hotLruCache.get("hot:ranks:all");
-      if (cached) return json(res, cached, 200, { "X-Cache": "HIT" }, reqStart);
+      if (cached && Array.isArray(cached.ranks) && cached.ranks.length > 0) {
+        return json(res, cached, 200, { "X-Cache": "HIT" }, reqStart);
+      }
       const home = await fetchOfficialHome();
       const ranks = home.sections.map((sec) => ({
         key: sec.type,
@@ -707,7 +741,8 @@ const server = http.createServer(async (req, res) => {
         items: sec.items,
       }));
       const payload = { ranks };
-      hotLruCache.set("hot:ranks:all", payload);
+      // 空结果不入缓存（同 /api/banners）
+      if (payload.ranks.length > 0) hotLruCache.set("hot:ranks:all", payload);
       return json(res, payload, 200, { "X-Cache": "MISS" }, reqStart);
     }
 

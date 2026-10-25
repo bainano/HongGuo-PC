@@ -270,15 +270,27 @@ function MainApp() {
   // 首页 Banner 推荐剧位（/api/banners）：与栏目数据并行拉取，失败不阻塞首页
   useEffect(() => {
     let alive = true;
-    fetchBanners()
-      .then((list) => {
+    let retryTimer = null;
+    const load = async (attempt = 0) => {
+      try {
+        const list = await fetchBanners();
+        // 后端刚启动时可能还没抓完官方首页，首次拿到空列表时延迟重试一次，
+        // 避免冷启动阶段（尤其是打包版）首页 Banner 区整块不出现
+        if (alive && Array.isArray(list) && list.length === 0 && attempt === 0) {
+          retryTimer = setTimeout(() => {
+            if (alive) load(1);
+          }, 1200);
+          return;
+        }
         if (alive) setBanners(Array.isArray(list) ? list : []);
-      })
-      .catch(() => {
+      } catch {
         if (alive) setBanners([]);
-      });
+      }
+    };
+    load();
     return () => {
       alive = false;
+      if (retryTimer) clearTimeout(retryTimer);
     };
   }, [refreshKey]);
 
