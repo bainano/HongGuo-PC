@@ -7,6 +7,7 @@ docs/releases/
 ├─ README.md      本说明
 ├─ TEMPLATE.md    新版本说明模板（复制后改名为 <版本号>.md）
 └─ v1.0.0.md      已发布版本的说明
+   v1.0.1.md      已发布版本的说明
 ```
 
 ## 命名规则
